@@ -1,0 +1,14 @@
+.formCont{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.formCont label{
+    display: flex; 
+    flex-direction: column;
+}
+
+.formCont div{
+    display: flex;
+}

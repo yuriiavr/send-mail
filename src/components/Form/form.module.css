@@ -1,3 +1,14 @@
+.formSection{
+    padding: 0 30px 30px 30px;
+    width: 50%;
+}
+
+.form{
+    padding: 30px 20px;
+    border: 1px dashed #000;
+    border-radius: 20px;
+}
+
 .formCont{
     display: flex;
     flex-direction: column;
@@ -7,8 +18,66 @@
 .formCont label{
     display: flex; 
     flex-direction: column;
+    align-items: start;
+    width: 300px;
+    margin-bottom: 20px;
 }
 
 .formCont div{
     display: flex;
+}
+
+.formCont span{
+    margin-bottom: 5px;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.formCont input{
+    border-radius: 20px;
+    border: none;
+    background-color: #F3F3F3;
+    font-size: 14px;
+    padding: 7px 15px;
+    width: 200px;
+}
+
+.selectStyles select{
+    border-radius: 20px;
+    border: none;
+    background-color: #F3F3F3;
+    font-size: 14px;
+    padding: 7px 15px;
+    appearance:none;
+    width: 230px;
+}
+
+.selectStyles{
+    position: relative;
+}
+
+.selectArrow{
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 15px;
+}
+
+.smallInp{
+    width: 150px !important;
+}
+
+.startButton{
+    background: transparent;
+    border: 2px solid #D9043D;
+    width: 255px;
+    height: 32px;
+    font-size: 14px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.title{
+    text-align: start;
 }

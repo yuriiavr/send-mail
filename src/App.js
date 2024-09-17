@@ -1,11 +1,16 @@
-import './App.css';
-import Form from './components/Form/form';
+import { Route, Routes } from "react-router";
+import "./App.css";
+import Sender from "./pages/SenderPage/senderPage";
+import TrackerPage from "./pages/TrakerPage/trackerPage";
 
 function App() {
   return (
-    <div className="App">
-      <Form />
-    </div>
+      <div className="App">
+        <Routes>
+          <Route path="/homepage" element={<Sender />} />
+          <Route path="/trackpage" element={<TrackerPage />} />
+        </Routes>
+      </div>
   );
 }
 

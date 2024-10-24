@@ -1,0 +1,21 @@
+.tableContainer {
+    margin: 20px 0;
+    padding: 0 40px 0 120px;
+  }
+  
+  .dataTable {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .dataTable th, .dataTable td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+    text-align: center;
+  }
+  
+  .dataTable th {
+    background-color: #f4f4f4;
+  }
+  

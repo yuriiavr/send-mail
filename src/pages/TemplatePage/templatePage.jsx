@@ -1,4 +1,4 @@
-import AddTemplate from "../../components/AddTamplate/addTamplate";
+import AddTemplate from "../../components/AddTemplate/addTemplate";
 import SideBar from "../../components/SideBar/sideBar";
 
 const Template = () => {

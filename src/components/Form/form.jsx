@@ -11,6 +11,8 @@ const Form = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     campaignName: "",
+    tempSubject: "",
+    nameFrom: "",
     domainName: "",
     group: "",
     posted: "",
@@ -73,6 +75,8 @@ const Form = () => {
         `${baseUrl}`+`senderMails/send`,
         {
           campaignName: formData.campaignName,
+          tempSubject: formData.tempSubject,
+          nameFrom: formData.nameFrom,
           posted: formData.posted,
           group: formData.group,
           domainName: formData.domainName,
@@ -101,37 +105,20 @@ const Form = () => {
               onChange={handleChange}
             />
           </label>
-          <label>
-            <span>Choice email domain</span>
-            <div className={css.selectStyles}>
-              <img
-                className={css.selectArrow}
-                src={require("../../img/select-arrow.png")}
-                alt=""
-              />
-              <select name="domainName"
-                value={formData.domainName}
-                onChange={handleChange}>
-                  <option value="" disabled>Виберіть домен</option>
-                {domains.map((domain) => (
-                  <option key={domain} value={domain}>
-                    {domain}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </label>
-          <label>
-            <span>Select proxy </span>
-            <div className={css.selectStyles}>
-              <img
-                className={css.selectArrow}
-                src={require("../../img/select-arrow.png")}
-                alt=""
-              />
-              <select className={css.smallInp} name="proxy" id=""></select>
-            </div>
-          </label>
+          <div style={{display: 'flex'}}>
+            <label>
+              <span>Enter email subject</span>
+              <div className={css.selectStyles}>
+                <input name="tempSubject" value={formData.tempSubject} onChange={handleChange} type="text" autoComplete="disable" required/>
+              </div>
+            </label>
+            <label>
+              <span>Enter sender name</span>
+              <div className={css.selectStyles}>
+                <input type="text" required name="nameFrom" value={formData.nameFrom} onChange={handleChange}/>
+              </div>
+            </label>
+          </div>
           <div>
             <label>
               <span>Select a group </span>

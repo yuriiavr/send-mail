@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import css from './addTemplate.module.css';
 import axios from 'axios';
 import { baseUrl } from '../api/api';
+import DOMPurify from 'dompurify';
 
 const AddTemplate = () => {
   const [tempName, setTempName] = useState('');
@@ -11,16 +12,29 @@ const AddTemplate = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const sanitizedTempName = DOMPurify.sanitize(tempName);
+    const sanitizedTempSubject = DOMPurify.sanitize(tempSubject);
+    const sanitizedTempBody = DOMPurify.sanitize(tempBody);
+
+    if (!sanitizedTempName.trim() || !sanitizedTempSubject.trim() || !sanitizedTempBody.trim()) {
+      alert('Все поля должны быть заполнены!');
+      return;
+    }
+
     try {
-      const response = await axios.post(`${baseUrl}` + 'senderMails/addtemp', {
-        tempName,
-        tempSubject,
-        tempBody,
+      const response = await axios.post(`${baseUrl}senderMails/addtemp`, {
+        tempName: sanitizedTempName,
+        tempSubject: sanitizedTempSubject,
+        tempBody: sanitizedTempBody,
       });
 
-      console.log('Шаблон створено успішно:', response.data);
+      console.log('Шаблон создан успешно:', response.data);
+
+      setTempName('');
+      setTempSubject('');
+      setTempBody('');
     } catch (error) {
-      console.error('Помилка при створенні шаблону:', error);
+      console.error('Ошибка при создании шаблона:', error);
     }
   };
 

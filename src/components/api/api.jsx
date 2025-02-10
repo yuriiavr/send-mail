@@ -1,3 +1,3 @@
-export const baseUrl = `http://localhost:3001/api/`;
+export const baseUrl = `https://fiiretool.com:4006`;
 
 export default { baseUrl };

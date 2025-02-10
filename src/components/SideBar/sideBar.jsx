@@ -19,7 +19,6 @@ const SideBar = () => {
                     <img src={require('../../img/add.png')} alt="add" />
                 </button>
                 <div className={css.addCont} style={{display: isOpen ? 'flex' : 'none'}}>
-                    <Link className={css.link} to='/addGroup'>Group</Link>
                     <Link className={css.link} to='/addTemplate'>Tamplate</Link>
                 </div>
             </div>

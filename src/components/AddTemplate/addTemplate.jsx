@@ -22,7 +22,7 @@ const AddTemplate = () => {
     }
 
     try {
-      const response = await axios.post(`${baseUrl}senderMails/addtemp`, {
+      const response = await axios.post(`${baseUrl}/api/senderMails/addtemp`, {
         tempName: sanitizedTempName,
         tempSubject: sanitizedTempSubject,
         tempBody: sanitizedTempBody,

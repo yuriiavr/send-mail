@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import css from './addTemplate.module.css';
 import axios from 'axios';
-import { baseUrl } from '../api/api';
 import DOMPurify from 'dompurify';
 
 const AddTemplate = () => {
@@ -22,19 +21,19 @@ const AddTemplate = () => {
     }
 
     try {
-      const response = await axios.post(`${baseUrl}/api/senderMails/addtemp`, {
+      const response = await axios.post('/api/templates/add', {
         tempName: sanitizedTempName,
         tempSubject: sanitizedTempSubject,
         tempBody: sanitizedTempBody,
       });
 
-      console.log('Шаблон создан успешно:', response.data);
+      console.log('Шаблон збережено:', response.data);
 
       setTempName('');
       setTempSubject('');
       setTempBody('');
     } catch (error) {
-      console.error('Ошибка при создании шаблона:', error);
+      console.error('Помилка при створенні шаблону:', error);
     }
   };
 

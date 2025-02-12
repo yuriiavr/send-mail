@@ -1,7 +1,6 @@
 import css from "./form.module.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { baseUrl } from "../api/api";
 
 const Form = () => {
   const [groups, setGroups] = useState([]);
@@ -31,8 +30,8 @@ const Form = () => {
   useEffect(() => {
     const fetchGroups = async () => {
       try {
-        const response = await axios.get(`${baseUrl}collections`);
-        setGroups(response.data.collections);
+        const response = await axios.get("/api/groups");
+        setGroups(response.data);
       } catch (error) {
         console.error("Помилка отримання груп: ", error);
       }
@@ -43,8 +42,8 @@ const Form = () => {
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const response = await axios.get(`${baseUrl}templates`);
-        setTemplates(response.data.templates);
+        const response = await axios.get("/api/templates");
+        setTemplates(response.data);
       } catch (error) {
         console.error("Помилка отримання шаблонів: ", error);
       }
@@ -55,8 +54,8 @@ const Form = () => {
   useEffect(() => {
     const fetchDomains = async () => {
       try {
-        const response = await axios.get(`${baseUrl}domains`);
-        setDomains(response.data.domains);
+        const response = await axios.get("/api/domains");
+        setDomains(response.data);
       } catch (error) {
         console.error("Помилка отримання доменів: ", error);
       }
@@ -69,13 +68,23 @@ const Form = () => {
       ...formData,
       [e.target.name]: e.target.value,
     });
+
+    if (e.target.name === "templateName") {
+      const selectedTemplate = templates.find(t => t.tempName === e.target.value);
+      if (selectedTemplate) {
+        setFormData((prev) => ({
+          ...prev,
+          tempSubject: selectedTemplate.tempSubject,
+        }));
+      }
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const response = await axios.post(`${baseUrl}senderMails/send`, {
+      const response = await axios.post("/api/senderMails/send", {
         campaignName: formData.campaignName,
         tempSubject: formData.tempSubject,
         nameFrom: formData.nameFrom,
@@ -119,6 +128,7 @@ const Form = () => {
                   type="text"
                   autoComplete="disable"
                   required
+                  readOnly
                 />
               </div>
             </label>
@@ -139,11 +149,6 @@ const Form = () => {
             <label>
               <span>Select a country</span>
               <div className={css.selectStyles}>
-                <img
-                  className={css.selectArrow}
-                  src={require("../../img/select-arrow.png")}
-                  alt=""
-                />
                 <select
                   className={css.smallInp}
                   name="geo"
@@ -173,20 +178,15 @@ const Form = () => {
           <label>
             <span>Choice email template</span>
             <div className={css.selectStyles}>
-              <img
-                className={css.selectArrow}
-                src={require("../../img/select-arrow.png")}
-                alt=""
-              />
               <select
                 name="templateName"
                 value={formData.templateName}
                 onChange={handleChange}
               >
-                <option value="" disabled>Selecet template</option>
+                <option value="" disabled>Select template</option>
                 {templates.map((template) => (
-                  <option key={template} value={template}>
-                    {template}
+                  <option key={template.tempName} value={template.tempName}>
+                    {template.tempName}
                   </option>
                 ))}
               </select>

@@ -1,21 +1,23 @@
 import css from "./form.module.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { baseUrl } from "../api/api";
+import { Link } from "react-router-dom";
 
 const Form = () => {
-  const [groups, setGroups] = useState([]);
   const [templates, setTemplates] = useState([]);
-  const [domains, setDomains] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     campaignName: "",
-    tempSubject: "",
     nameFrom: "",
     domainName: "",
-    group: "",
     posted: "",
     templateName: "",
-    geo: "", 
+    geo: "",
+    shopName: "",
+    productName: "",
+    tempSubject: "",
+    previewText: "",
   });
 
   const countries = [
@@ -28,39 +30,15 @@ const Form = () => {
   ];
 
   useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        const response = await axios.get("/api/groups");
-        setGroups(response.data);
-      } catch (error) {
-        console.error("Помилка отримання груп: ", error);
-      }
-    };
-    fetchGroups();
-  }, []);
-
-  useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const response = await axios.get("/api/templates");
+        const response = await axios.get(baseUrl + "/api/templates");
         setTemplates(response.data);
       } catch (error) {
         console.error("Помилка отримання шаблонів: ", error);
       }
     };
     fetchTemplates();
-  }, []);
-
-  useEffect(() => {
-    const fetchDomains = async () => {
-      try {
-        const response = await axios.get("/api/domains");
-        setDomains(response.data);
-      } catch (error) {
-        console.error("Помилка отримання доменів: ", error);
-      }
-    };
-    fetchDomains();
   }, []);
 
   const handleChange = (e) => {
@@ -70,7 +48,9 @@ const Form = () => {
     });
 
     if (e.target.name === "templateName") {
-      const selectedTemplate = templates.find(t => t.tempName === e.target.value);
+      const selectedTemplate = templates.find(
+        (t) => t.tempName === e.target.value
+      );
       if (selectedTemplate) {
         setFormData((prev) => ({
           ...prev,
@@ -84,15 +64,17 @@ const Form = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const response = await axios.post("/api/senderMails/send", {
+      const response = await axios.post(baseUrl + "/api/senderMails/send", {
         campaignName: formData.campaignName,
-        tempSubject: formData.tempSubject,
         nameFrom: formData.nameFrom,
-        posted: formData.posted,
-        group: formData.group,
         domainName: formData.domainName,
+        posted: formData.posted,
         templateName: formData.templateName,
-        geo: formData.geo, 
+        geo: formData.geo,
+        shopName: formData.shopName,
+        productName: formData.productName,
+        tempSubject: formData.tempSubject,
+        previewText: formData.previewText,
       });
 
       console.log("Відправлено успішно:", response.data);
@@ -119,7 +101,34 @@ const Form = () => {
           </label>
           <div style={{ display: "flex" }}>
             <label>
-              <span>Enter email subject</span>
+              <span>Enter product name</span>
+              <div className={css.selectStyles}>
+                <input
+                  name="productName"
+                  value={formData.productName}
+                  onChange={handleChange}
+                  type="text"
+                  autoComplete="disable"
+                  required
+                />
+              </div>
+            </label>
+            <label>
+              <span>Enter shop name</span>
+              <div className={css.selectStyles}>
+                <input
+                  type="text"
+                  required
+                  name="shopName"
+                  value={formData.shopName}
+                  onChange={handleChange}
+                />
+              </div>
+            </label>
+          </div>
+          <div style={{ display: "flex" }}>
+            <label>
+              <span>Enter template subject</span>
               <div className={css.selectStyles}>
                 <input
                   name="tempSubject"
@@ -128,7 +137,6 @@ const Form = () => {
                   type="text"
                   autoComplete="disable"
                   required
-                  readOnly
                 />
               </div>
             </label>
@@ -155,7 +163,9 @@ const Form = () => {
                   value={formData.geo}
                   onChange={handleChange}
                 >
-                  <option value="" disabled>Select Country</option>
+                  <option value="" disabled>
+                    Select Country
+                  </option>
                   {countries.map((country) => (
                     <option key={country.code} value={country.code}>
                       {country.name}
@@ -183,7 +193,9 @@ const Form = () => {
                 value={formData.templateName}
                 onChange={handleChange}
               >
-                <option value="" disabled>Select template</option>
+                <option value="" disabled>
+                  Select template
+                </option>
                 {templates.map((template) => (
                   <option key={template.tempName} value={template.tempName}>
                     {template.tempName}
@@ -192,10 +204,28 @@ const Form = () => {
               </select>
             </div>
           </label>
+          <label>
+            <span>Enter preview text</span>
+            <div className={css.selectStyles}>
+              <input
+                type="text"
+                required
+                name="previewText"
+                value={formData.previewText}
+                onChange={handleChange}
+              />
+            </div>
+          </label>
         </div>
-        <button disabled={isSubmitting} className={css.startButton} type="submit">
+        <button
+          disabled={isSubmitting}
+          className={css.startButton}
+          type="submit"
+        >
           {isSubmitting ? "Sending..." : "Start"}
         </button>
+        <br />
+        <Link to={"/manualSender"}>try manual</Link>
       </form>
     </div>
   );

@@ -13,7 +13,7 @@ const GeoStats = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-       baseUrl + "/api/senderMails/stats"
+       baseUrl + "senderMails/stats"
       );
       setAllData(response.data);
     } catch (error) {

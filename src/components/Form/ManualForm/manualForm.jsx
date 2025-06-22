@@ -41,7 +41,7 @@ const ManualForm = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const response = await axios.post(baseUrl + "/api/senderMails/send-manual", {
+      const response = await axios.post(baseUrl + "senderMails/send-manual", {
         campaignName: formData.campaignName,
         nameFrom: formData.nameFrom,
         domainName: formData.domainName,

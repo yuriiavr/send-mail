@@ -2,6 +2,7 @@ import css from "./track.module.css";
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { baseUrl } from "../api/api";
 
 const Track = () => {
   const [data, setData] = useState([]);
@@ -18,7 +19,7 @@ const Track = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        "https://fiiretool.com:4006/api/senderMails/stats"
+        baseUrl + "senderMails/stats"
       );
 
       const sortedData = [...response.data].sort((a, b) => {

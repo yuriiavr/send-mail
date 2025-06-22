@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import css from './addTemplate.module.css';
 import axios from 'axios';
 import DOMPurify from 'dompurify';
+import { baseUrl } from "../api/api";
 
 const AddTemplate = () => {
   const [tempName, setTempName] = useState('');
@@ -21,7 +22,7 @@ const AddTemplate = () => {
     }
 
     try {
-      const response = await axios.post('/api/templates/add', {
+      const response = await axios.post(baseUrl + 'templates/add', {
         tempName: sanitizedTempName,
         tempSubject: sanitizedTempSubject,
         tempBody: sanitizedTempBody,

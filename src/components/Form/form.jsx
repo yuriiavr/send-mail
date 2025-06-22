@@ -32,7 +32,7 @@ const Form = () => {
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const response = await axios.get(baseUrl + "/api/templates");
+        const response = await axios.get(baseUrl + "templates");
         setTemplates(response.data);
       } catch (error) {
         console.error("Помилка отримання шаблонів: ", error);
@@ -64,7 +64,7 @@ const Form = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const response = await axios.post(baseUrl + "/api/senderMails/send", {
+      const response = await axios.post(baseUrl + "senderMails/send", {
         campaignName: formData.campaignName,
         nameFrom: formData.nameFrom,
         domainName: formData.domainName,

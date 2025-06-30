@@ -18,6 +18,18 @@ const ManualForm = () => {
     previewText: "",
   });
 
+    useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        const response = await axios.get(baseUrl + "templates");
+        setTemplates(response.data);
+      } catch (error) {
+        console.error("Помилка отримання шаблонів: ", error);
+      }
+    };
+    fetchTemplates();
+  }, []);
+
   const handleChange = (e) => {
     setFormData({
       ...formData,

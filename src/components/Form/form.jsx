@@ -20,13 +20,24 @@ const Form = () => {
     previewText: "",
   });
 
+  const [geoInput, setGeoInput] = useState("");
+  const [filteredCountries, setFilteredCountries] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+
   const countries = [
-    { code: "ES", name: "Spain" },
-    { code: "US", name: "United States" },
-    { code: "FR", name: "France" },
-    { code: "DE", name: "Germany" },
-    { code: "IT", name: "Italy" },
-    { code: "ZA", name: "South Africa" },
+    { code: "ES", name: "[ES] Spain" },
+    { code: "US", name: "[US] United States" },
+    { code: "FR", name: "[FR] France" },
+    { code: "DE", name: "[DE] Germany" },
+    { code: "IT", name: "[IT] Italy" },
+    { code: "ZA", name: "[ZA] South Africa" },
+    { code: "GB", name: "[GB] United Kingdom" },
+    { code: "CA", name: "[CA] Canada" },
+    { code: "AU", name: "[AU] Australia" },
+    { code: "NZ", name: "[NZ] New Zealand" },
+    { code: "IE", name: "[IE] Ireland" },
+    { code: "PL", name: "[PL] Poland" },
+    { code: "UA", name: "[UA] Ukraine" },
   ];
 
   useEffect(() => {
@@ -41,16 +52,26 @@ const Form = () => {
     fetchTemplates();
   }, []);
 
+  useEffect(() => {
+    const selectedCountry = countries.find(
+      (country) => country.code === formData.geo
+    );
+    if (selectedCountry) {
+      setGeoInput(selectedCountry.name);
+    } else {
+      setGeoInput("");
+    }
+  }, [formData.geo]);
+
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
 
-    if (e.target.name === "templateName") {
-      const selectedTemplate = templates.find(
-        (t) => t.tempName === e.target.value
-      );
+    if (name === "templateName") {
+      const selectedTemplate = templates.find((t) => t.tempName === value);
       if (selectedTemplate) {
         setFormData((prev) => ({
           ...prev,
@@ -58,6 +79,32 @@ const Form = () => {
         }));
       }
     }
+  };
+
+  const handleGeoInputChange = (e) => {
+    const value = e.target.value;
+    setGeoInput(value);
+    setShowDropdown(true);
+
+    const lowerCaseValue = value.toLowerCase();
+    const filtered = countries.filter((country) =>
+      country.name.toLowerCase().includes(lowerCaseValue)
+    );
+    setFilteredCountries(filtered);
+
+    const matchedCountry = countries.find(
+      (country) => country.name.toLowerCase() === lowerCaseValue
+    );
+    if (!matchedCountry) {
+      setFormData((prev) => ({ ...prev, geo: "" }));
+    }
+  };
+
+  const handleGeoSelect = (country) => {
+    setGeoInput(country.name);
+    setFormData((prev) => ({ ...prev, geo: country.code }));
+    setShowDropdown(false);
+    setFilteredCountries([]);
   };
 
   const handleSubmit = async (e) => {
@@ -85,9 +132,27 @@ const Form = () => {
     }
   };
 
+  const handleClickOutside = (e) => {
+    if (!e.target.closest(`.${css.selectStylesGeo}`) && showDropdown) {
+      setShowDropdown(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showDropdown]);
+
   return (
     <div className={css.formSection}>
-      <h1 className={css.title}>Email Mailing</h1>
+      <div className={css.sendNav}>
+        <h2 className={css.title}>Email Mailing /</h2>
+        <Link to={"/manualSender"} className={css.sendLink}>
+          Manual
+        </Link>
+      </div>
       <form className={css.form} onSubmit={handleSubmit}>
         <div className={css.formCont}>
           <label>
@@ -108,7 +173,7 @@ const Form = () => {
                   value={formData.productName}
                   onChange={handleChange}
                   type="text"
-                  autoComplete="disable"
+                  autoComplete="off"
                   required
                 />
               </div>
@@ -128,16 +193,34 @@ const Form = () => {
           </div>
           <div style={{ display: "flex" }}>
             <label>
-              <span>Enter template subject</span>
-              <div className={css.selectStyles}>
+              <span>Select a country</span>
+              <div
+                className={css.selectStylesGeo}
+                style={{ position: "relative" }}
+              >
                 <input
-                  name="tempSubject"
-                  value={formData.tempSubject}
-                  onChange={handleChange}
                   type="text"
-                  autoComplete="disable"
+                  name="geoInput"
+                  value={geoInput}
+                  onChange={handleGeoInputChange}
+                  onFocus={() => setShowDropdown(true)}
+                  placeholder="Start typing..."
+                  autoComplete="off"
                   required
                 />
+                {showDropdown && filteredCountries.length > 0 && (
+                  <ul className={css.countryDropdown}>
+                    {filteredCountries.map((country) => (
+                      <li
+                        key={country.code}
+                        onClick={() => handleGeoSelect(country)}
+                        className={css.dropdownItem}
+                      >
+                        {country.name}
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
             </label>
             <label>
@@ -155,29 +238,29 @@ const Form = () => {
           </div>
           <div>
             <label>
-              <span>Select a country</span>
+              <span>Choice email template</span>
               <div className={css.selectStyles}>
                 <select
-                  className={css.smallInp}
-                  name="geo"
-                  value={formData.geo}
+                  name="templateName"
+                  value={formData.templateName}
                   onChange={handleChange}
                 >
                   <option value="" disabled>
-                    Select Country
+                    Select template
                   </option>
-                  {countries.map((country) => (
-                    <option key={country.code} value={country.code}>
-                      {country.name}
+                  {templates.map((template) => (
+                    <option key={template.tempName} value={template.tempName}>
+                      {template.tempName}
                     </option>
                   ))}
                 </select>
               </div>
             </label>
+
             <label>
               <span>Select amount</span>
               <input
-                className={css.smallInp}
+                
                 name="posted"
                 type="text"
                 value={formData.posted}
@@ -186,28 +269,23 @@ const Form = () => {
             </label>
           </div>
           <label>
-            <span>Choice email template</span>
+            <span>Enter template subject</span>
             <div className={css.selectStyles}>
-              <select
-                name="templateName"
-                value={formData.templateName}
+              <textarea
+                name="tempSubject"
+                value={formData.tempSubject}
                 onChange={handleChange}
-              >
-                <option value="" disabled>
-                  Select template
-                </option>
-                {templates.map((template) => (
-                  <option key={template.tempName} value={template.tempName}>
-                    {template.tempName}
-                  </option>
-                ))}
-              </select>
+                type="text"
+                autoComplete="off"
+                required
+              />
             </div>
           </label>
+
           <label>
             <span>Enter preview text</span>
             <div className={css.selectStyles}>
-              <input
+              <textarea
                 type="text"
                 required
                 name="previewText"
@@ -224,8 +302,6 @@ const Form = () => {
         >
           {isSubmitting ? "Sending..." : "Start"}
         </button>
-        <br />
-        <Link to={"/manualSender"}>try manual</Link>
       </form>
     </div>
   );

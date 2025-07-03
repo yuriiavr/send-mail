@@ -2,6 +2,7 @@ import axios from "axios";
 import css from "../form.module.css";
 import { baseUrl } from "../../api/api";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const ManualForm = () => {
   const [templates, setTemplates] = useState([]);
@@ -16,6 +17,7 @@ const ManualForm = () => {
     productName: "",
     tempSubject: "",
     previewText: "",
+    emails: "",
   });
 
     useEffect(() => {
@@ -63,6 +65,7 @@ const ManualForm = () => {
         productName: formData.productName,
         tempSubject: formData.tempSubject,
         previewText: formData.previewText,
+        emails: formData.emails
       });
 
       console.log("Відправлено успішно:", response.data);
@@ -75,7 +78,10 @@ const ManualForm = () => {
 
   return (
     <div className={css.formSection}>
-      <h1 className={css.title}>Manual Sender</h1>
+      <div className={css.sendNav}>
+        <Link to={'/'} className={css.sendLink}>Email Mailing</Link>
+        <h2 className={css.title}>/ Manual</h2>
+      </div>
       <form className={css.form} onSubmit={handleSubmit}>
         <div className={css.formCont}>
           <label>
@@ -115,45 +121,7 @@ const ManualForm = () => {
             </label>
           </div>
           <div style={{ display: "flex" }}>
-            <label>
-              <span>Enter template subject</span>
-              <div className={css.selectStyles}>
-                <input
-                  name="tempSubject"
-                  value={formData.tempSubject}
-                  onChange={handleChange}
-                  type="text"
-                  autoComplete="disable"
-                  required
-                />
-              </div>
-            </label>
-            <label>
-              <span>Enter sender name</span>
-              <div className={css.selectStyles}>
-                <input
-                  type="text"
-                  required
-                  name="nameFrom"
-                  value={formData.nameFrom}
-                  onChange={handleChange}
-                />
-              </div>
-            </label>
-          </div>
-          <div>
-            <label>
-              <span>Select amount</span>
-              <input
-                className={css.smallInp}
-                name="posted"
-                type="text"
-                value={formData.posted}
-                onChange={handleChange}
-              />
-            </label>
-          </div>
-          <label>
+           <label>
             <span>Choice email template</span>
             <div className={css.selectStyles}>
               <select
@@ -172,16 +140,60 @@ const ManualForm = () => {
               </select>
             </div>
           </label>
+            <label>
+              <span>Enter sender name</span>
+              <div className={css.selectStyles}>
+                <input
+                  type="text"
+                  required
+                  name="nameFrom"
+                  value={formData.nameFrom}
+                  onChange={handleChange}
+                />
+              </div>
+            </label>
+          </div>
+          <div>
+            <label>
+              <span>Select amount</span>
+              <input
+                name="posted"
+                type="text"
+                value={formData.posted}
+                onChange={handleChange}
+              />
+            </label>
+          </div>
+           <label>
+              <span>Enter template subject</span>
+              <div className={css.selectStyles}>
+                <textarea
+                  name="tempSubject"
+                  value={formData.tempSubject}
+                  onChange={handleChange}
+                  type="text"
+                  autoComplete="disable"
+                  required
+                />
+              </div>
+            </label>
+          
           <label>
             <span>Enter preview text</span>
             <div className={css.selectStyles}>
-              <input
+              <textarea
                 type="text"
                 required
                 name="previewText"
                 value={formData.previewText}
                 onChange={handleChange}
               />
+            </div>
+          </label>
+          <label>
+            <span>Enter emails</span>
+            <div className={css.textAreaStyles}>
+              <textarea name="emails" id="emails" value={formData.emails} onChange={handleChange}></textarea>
             </div>
           </label>
         </div>

@@ -1,11 +1,10 @@
 import Form from "../../components/Form/form";
-import SideBar from "../../components/SideBar/sideBar";
+import Header from "../../components/Header/Header";
 
 const Sender = () => {
     
     return(
         <>
-            <SideBar />
             <Form />
         </>
     )

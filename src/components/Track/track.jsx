@@ -165,6 +165,8 @@ const Track = () => {
                 <th>Open rate</th>
                 <th>Geo</th>
                 <th>Date</th>
+                <th>Subj</th>
+                <th>Text</th>
               </tr>
             </thead>
             <tbody>
@@ -184,6 +186,8 @@ const Track = () => {
 
                   <td>{item.geo}</td>
                   <td>{item.createdAt}</td>
+                  <td>{item.tempSubject}</td>
+                  <td>{item.previewText}</td>
                 </tr>
               ))}
             </tbody>

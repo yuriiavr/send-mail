@@ -1,11 +1,10 @@
 import AddTemplate from "../../components/AddTemplate/addTemplate";
-import SideBar from "../../components/SideBar/sideBar";
+import Header from "../../components/Header/Header";
 
 const Template = () => {
     
     return(
         <>
-            <SideBar />
             <AddTemplate />
         </>
     )

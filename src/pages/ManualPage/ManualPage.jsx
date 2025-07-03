@@ -1,11 +1,10 @@
-import SideBar from "../../components/SideBar/sideBar"
+import Header from "../../components/Header/Header"
 import ManualForm from "../../components/Form/ManualForm/manualForm"
 
 const ManualPage = () => {
     
     return(
         <>
-            <SideBar />
             <ManualForm />
         </>
     )

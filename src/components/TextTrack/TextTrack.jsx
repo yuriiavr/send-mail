@@ -51,6 +51,7 @@ const TextTrack = () => {
       if (!aggregated[tempSubject]) {
         aggregated[tempSubject] = {
           tempSubject,
+          previewText: item.previewText || "",
           posted: 0,
           delivered: 0,
           open: 0,

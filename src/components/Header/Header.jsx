@@ -10,8 +10,9 @@ const Header = () => {
     setIsOpen(!isOpen);
   };
 
-  const isHome = location.pathname === "/";
-  const isTrack = location.pathname === "/trackpage";
+  const isMailingActive = location.pathname === "/" || location.pathname === "/manualSender";;
+  const isStatActive = location.pathname === "/trackpage" || location.pathname === "/geoTrack" || location.pathname === "/textTrack";
+  const isAddTemplateActive = location.pathname === "/addTemplate";
 
   return (
     <div className={css.header}>
@@ -23,16 +24,22 @@ const Header = () => {
         />
       </div>
       <div className={css.navigation}>
-        <Link className={css.link} to="/">
+        <Link
+          className={`${css.link} ${isMailingActive ? css.activeLink : ""}`}
+          to="/"
+        >
           Mailing
         </Link>
-        <Link className={css.link} to="/trackpage">
+        <Link
+          className={`${css.link} ${isStatActive ? css.activeLink : ""}`}
+          to="/trackpage"
+        >
           Stat
         </Link>
       </div>
       <div style={{ position: "relative" }}>
         <button
-          className={css.link}
+          className={`${css.link} ${isOpen ? css.activeLink : ""}`}
           style={{
             background: "transparent",
             border: "none",
@@ -46,8 +53,11 @@ const Header = () => {
           className={css.addCont}
           style={{ display: isOpen ? "flex" : "none" }}
         >
-          <Link className={css.link} to="/addTemplate">
-            Tamplate
+          <Link
+            className={`${css.link} ${isAddTemplateActive ? css.activeLink : ""}`}
+            to="/addTemplate"
+          >
+            Template
           </Link>
         </div>
       </div>

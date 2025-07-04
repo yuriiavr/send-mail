@@ -5,7 +5,8 @@ import { baseUrl } from "../api/api";
 import { Link } from "react-router-dom";
 
 const Form = () => {
-  const [templates, setTemplates] = useState([]);
+  const [allTemplates, setAllTemplates] = useState([]);
+  const [filteredTemplates, setFilteredTemplates] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     campaignName: "",
@@ -38,13 +39,16 @@ const Form = () => {
     { code: "IE", name: "[IE] Ireland" },
     { code: "PL", name: "[PL] Poland" },
     { code: "UA", name: "[UA] Ukraine" },
+    { code: "AR", name: "[AR] Argentina" },
+    { code: "RO", name: "[RO] Romania" },
+    { code: "BE", name: "[BE] Belgium" },
   ];
 
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
         const response = await axios.get(baseUrl + "templates");
-        setTemplates(response.data);
+        setAllTemplates(response.data);
       } catch (error) {
         console.error("Помилка отримання шаблонів: ", error);
       }
@@ -53,15 +57,23 @@ const Form = () => {
   }, []);
 
   useEffect(() => {
-    const selectedCountry = countries.find(
-      (country) => country.code === formData.geo
-    );
-    if (selectedCountry) {
-      setGeoInput(selectedCountry.name);
+    if (!formData.geo) {
+      setFilteredTemplates(allTemplates.filter(template => template.tempGeo === "none" || template.tempGeo === undefined));
     } else {
-      setGeoInput("");
+      const templatesByGeo = allTemplates.filter(
+        (template) =>
+          template.tempGeo === formData.geo || template.tempGeo === "none"
+      );
+      setFilteredTemplates(templatesByGeo);
     }
-  }, [formData.geo]);
+
+    setFormData((prev) => ({
+      ...prev,
+      templateName: "",
+      tempSubject: "",
+      previewText: "",
+    }));
+  }, [formData.geo, allTemplates]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -71,11 +83,14 @@ const Form = () => {
     });
 
     if (name === "templateName") {
-      const selectedTemplate = templates.find((t) => t.tempName === value);
+      const selectedTemplate = filteredTemplates.find(
+        (t) => t.tempName === value
+      );
       if (selectedTemplate) {
         setFormData((prev) => ({
           ...prev,
           tempSubject: selectedTemplate.tempSubject,
+          previewText: selectedTemplate.previewText || "",
         }));
       }
     }
@@ -87,16 +102,18 @@ const Form = () => {
     setShowDropdown(true);
 
     const lowerCaseValue = value.toLowerCase();
+
     const filtered = countries.filter((country) =>
       country.name.toLowerCase().includes(lowerCaseValue)
     );
     setFilteredCountries(filtered);
 
-    const matchedCountry = countries.find(
-      (country) => country.name.toLowerCase() === lowerCaseValue
-    );
-    if (!matchedCountry) {
-      setFormData((prev) => ({ ...prev, geo: "" }));
+    const currentSelectedCountryObject = countries.find(c => c.code === formData.geo);
+
+    if (value === "") {
+        setFormData((prev) => ({ ...prev, geo: "" }));
+    } else if (currentSelectedCountryObject && currentSelectedCountryObject.name.toLowerCase() !== lowerCaseValue) {
+        setFormData((prev) => ({ ...prev, geo: "" }));
     }
   };
 
@@ -125,6 +142,19 @@ const Form = () => {
       });
 
       console.log("Відправлено успішно:", response.data);
+      setFormData({
+        campaignName: "",
+        nameFrom: "",
+        domainName: "",
+        posted: "",
+        templateName: "",
+        geo: "",
+        shopName: "",
+        productName: "",
+        tempSubject: "",
+        previewText: "",
+      });
+      setGeoInput("");
     } catch (error) {
       console.error("Помилка відправлення:", error);
     } finally {
@@ -133,8 +163,17 @@ const Form = () => {
   };
 
   const handleClickOutside = (e) => {
-    if (!e.target.closest(`.${css.selectStylesGeo}`) && showDropdown) {
+    if (e.target && !e.target.closest(`.${css.selectStylesGeo}`) && showDropdown) {
       setShowDropdown(false);
+
+      const selectedCountry = countries.find(country => country.code === formData.geo);
+      if (selectedCountry) {
+        if (geoInput !== selectedCountry.name) {
+          setGeoInput(selectedCountry.name);
+        }
+      } else {
+        setGeoInput("");
+      }
     }
   };
 
@@ -143,7 +182,7 @@ const Form = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showDropdown]);
+  }, [showDropdown, geoInput, formData.geo]);
 
   return (
     <div className={css.formSection}>
@@ -162,6 +201,7 @@ const Form = () => {
               type="text"
               value={formData.campaignName}
               onChange={handleChange}
+              required
             />
           </label>
           <div style={{ display: "flex" }}>
@@ -244,12 +284,13 @@ const Form = () => {
                   name="templateName"
                   value={formData.templateName}
                   onChange={handleChange}
+                  required
                 >
                   <option value="" disabled>
                     Select template
                   </option>
-                  {templates.map((template) => (
-                    <option key={template.tempName} value={template.tempName}>
+                  {filteredTemplates.map((template) => (
+                    <option key={template.id} value={template.tempName}>
                       {template.tempName}
                     </option>
                   ))}
@@ -260,11 +301,11 @@ const Form = () => {
             <label>
               <span>Select amount</span>
               <input
-                
                 name="posted"
                 type="text"
                 value={formData.posted}
                 onChange={handleChange}
+                required
               />
             </label>
           </div>

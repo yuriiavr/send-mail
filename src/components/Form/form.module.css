@@ -133,6 +133,10 @@
   font-family: 'Bebas Neue';
 }
 
+.selectStylesGeo input{
+  font-family: 'Bebas Neue';
+}
+
 input::placeholder {
   font-family: "Bebas Neue", sans-serif; 
   color: #999; 

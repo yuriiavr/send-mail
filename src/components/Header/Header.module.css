@@ -56,8 +56,13 @@
     color: rgb(75 85 99);
     text-decoration: none;
     font-size: 18px;
+    transition: color 0.3s ease;
 }
 
 .link:focus, .link:hover{
     color: #ff5100;
+}
+
+.activeLink {
+  color: #ff5100;
 }

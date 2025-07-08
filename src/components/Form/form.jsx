@@ -1,7 +1,6 @@
 import css from "./form.module.css";
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { baseUrl } from "../api/api";
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import fetchWithFallback from "../api/fetchWithFallback";
 import { Link } from "react-router-dom";
 
 const Form = () => {
@@ -25,7 +24,7 @@ const Form = () => {
   const [filteredCountries, setFilteredCountries] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const countries = [
+  const countries = useMemo(() => [
     { code: "ES", name: "[ES] Spain" },
     { code: "US", name: "[US] United States" },
     { code: "FR", name: "[FR] France" },
@@ -42,12 +41,12 @@ const Form = () => {
     { code: "AR", name: "[AR] Argentina" },
     { code: "RO", name: "[RO] Romania" },
     { code: "BE", name: "[BE] Belgium" },
-  ];
+  ], []);
 
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const response = await axios.get(baseUrl + "templates");
+        const response = await fetchWithFallback('get', 'templates');
         setAllTemplates(response.data);
       } catch (error) {
         console.error("Помилка отримання шаблонів: ", error);
@@ -111,9 +110,9 @@ const Form = () => {
     const currentSelectedCountryObject = countries.find(c => c.code === formData.geo);
 
     if (value === "") {
-        setFormData((prev) => ({ ...prev, geo: "" }));
+      setFormData((prev) => ({ ...prev, geo: "" }));
     } else if (currentSelectedCountryObject && currentSelectedCountryObject.name.toLowerCase() !== lowerCaseValue) {
-        setFormData((prev) => ({ ...prev, geo: "" }));
+      setFormData((prev) => ({ ...prev, geo: "" }));
     }
   };
 
@@ -128,7 +127,7 @@ const Form = () => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      const response = await axios.post(baseUrl + "senderMails/send", {
+      const response = await fetchWithFallback('post', "senderMails/send", {
         campaignName: formData.campaignName,
         nameFrom: formData.nameFrom,
         domainName: formData.domainName,
@@ -162,7 +161,7 @@ const Form = () => {
     }
   };
 
-  const handleClickOutside = (e) => {
+  const handleClickOutside = useCallback((e) => {
     if (e.target && !e.target.closest(`.${css.selectStylesGeo}`) && showDropdown) {
       setShowDropdown(false);
 
@@ -175,14 +174,14 @@ const Form = () => {
         setGeoInput("");
       }
     }
-  };
+  }, [showDropdown, geoInput, formData.geo, countries]);
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showDropdown, geoInput, formData.geo]);
+  }, [handleClickOutside]);
 
   return (
     <div className={css.formSection}>

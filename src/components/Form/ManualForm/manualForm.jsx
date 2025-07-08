@@ -1,6 +1,5 @@
-import axios from "axios";
 import css from "../form.module.css";
-import { baseUrl } from "../../api/api";
+import fetchWithFallback from "../../api/fetchWithFallback";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -24,7 +23,7 @@ const ManualForm = () => {
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const response = await axios.get(baseUrl + "templates");
+        const response = await fetchWithFallback('get', "templates");
         setTemplates(response.data);
       } catch (error) {
         console.error("Помилка отримання шаблонів: ", error);
@@ -79,7 +78,7 @@ const ManualForm = () => {
     }
 
     try {
-      const response = await axios.post(baseUrl + "senderMails/send-manual", {
+      const response = await fetchWithFallback('post', "senderMails/send-manual", {
         campaignName: formData.campaignName,
         nameFrom: formData.nameFrom,
         domainName: formData.domainName,

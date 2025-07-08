@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import css from "../Track/track.module.css";
-import { baseUrl } from "../api/api";
+import fetchWithFallback from "../api/fetchWithFallback";
+
 const GeoStats = () => {
   const [geoData, setGeoData] = useState([]);
   const [allData, setAllData] = useState([]);
@@ -12,8 +12,8 @@ const GeoStats = () => {
   const fetchGeoStats = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-       baseUrl + "senderMails/stats"
+      const response = await fetchWithFallback(
+       'get', "senderMails/stats"
       );
       setAllData(response.data);
     } catch (error) {

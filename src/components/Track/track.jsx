@@ -1,8 +1,6 @@
 import css from "./track.module.css";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Link } from "react-router-dom";
-import { baseUrl } from "../api/api";
+import fetchWithFallback from "../api/fetchWithFallback";
 
 const Track = () => {
   const [data, setData] = useState([]);
@@ -10,7 +8,6 @@ const Track = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(25);
   const [geoFilter, setGeoFilter] = useState("");
-  const [dateFilter, setDateFilter] = useState("");
   const [loading, setLoading] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -18,8 +15,8 @@ const Track = () => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(
-        baseUrl + "senderMails/stats"
+      const response = await fetchWithFallback(
+        'get', "senderMails/stats"
       );
 
       const sortedData = [...response.data].sort((a, b) => {

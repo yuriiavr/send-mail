@@ -13,6 +13,8 @@ const Header = () => {
   const isMailingActive = location.pathname === "/" || location.pathname === "/manualSender";;
   const isStatActive = location.pathname === "/trackpage" || location.pathname === "/geoTrack" || location.pathname === "/textTrack";
   const isAddTemplateActive = location.pathname === "/addTemplate";
+  const isDelTemplateActive = location.pathname === "/delTemplate";
+  const isScheduleActive = location.pathname === "/schedulePage";
 
   return (
     <div className={css.header}>
@@ -47,7 +49,7 @@ const Header = () => {
           }}
           onClick={openAdd}
         >
-          Add
+          ADD
         </button>
         <div
           className={css.addCont}
@@ -57,7 +59,19 @@ const Header = () => {
             className={`${css.link} ${isAddTemplateActive ? css.activeLink : ""}`}
             to="/addTemplate"
           >
-            Template
+            Add Template
+          </Link>
+                    <Link
+            className={`${css.link} ${isDelTemplateActive ? css.activeLink : ""}`}
+            to="/delTemplate"
+          >
+            Delete Template
+          </Link>
+          <Link
+            className={`${css.link} ${isScheduleActive ? css.activeLink : ""}`}
+            to="/schedulePage"
+          >
+            Schedule
           </Link>
         </div>
       </div>

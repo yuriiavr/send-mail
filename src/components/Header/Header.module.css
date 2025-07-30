@@ -72,3 +72,20 @@
 .activeLink {
   color: #ff5100;
 }
+
+.profileIconLink{
+    margin-right: 20px;
+}
+
+.authSection{
+    display: flex;
+    align-items: center;
+}
+
+.icon{
+    fill: #000 
+}
+
+.icon:hover, .icon:focus{
+    fill: #ff5100
+}

@@ -3,8 +3,10 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { logoutUser } from "../../redux/auth/operations";
 import css from "./Header.module.css";
-import profileIcon from "../../img/profile-icon.png"
 import { useAuth } from "../../hooks/useAuth";
+import { ReactComponent as LogOutIcon } from '../../img/logout.svg';
+import { ReactComponent as UserIcon } from '../../img/user.svg';
+
 
 const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,6 +32,8 @@ const Header = () => {
   const isLogInActive = location.pathname === "/login";
   const isSignUpActive = location.pathname === "/signup";
   const isUserHomePageActive = location.pathname === "/userhomepage";
+
+  
 
   return (
     <div className={css.header}>
@@ -94,22 +98,21 @@ const Header = () => {
       <div className={css.authSection}>
         {isLoggedIn ? (
           <>
-            <button
-              className={`${css.link} ${css.logoutButton}`}
-              onClick={handleLogout}
-            >
-              Log Out
-            </button>
-            <Link
+          <Link
               to={"/userhomepage"}
               className={`${css.profileIconLink} ${isUserHomePageActive ? css.activeLink : ""}`}
+              
             >
-              <img
-                className={css.profileIcon}
-                src={profileIcon}
-                alt="profile icon"
-              />
+              <UserIcon className={css.icon} width="30" height="30" />
             </Link>
+            <button
+              className={`${css.link} ${css.logoutButton}`}
+              style={{border: 'none', background: 'transparent', cursor: 'pointer'}}
+              onClick={handleLogout}
+            >
+               <LogOutIcon className={css.icon} width="30" height="30" />
+            </button>
+            
           </>
         ) : (
           <>

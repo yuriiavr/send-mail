@@ -19,7 +19,7 @@ export default function SignUp() {
         setIsSubmitting(true);
 
         try {
-            const response = await fetchWithFallback('post', '/auth/register', { userName, email, password });
+            const response = await fetchWithFallback('post', 'auth/register', { userName, email, password });
 
             if (response.data && response.data.status === 'success') {
                 setShowSuccess(true);

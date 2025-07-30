@@ -16,6 +16,8 @@ import { useAuth } from "./hooks/useAuth";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { fetchCurrentUser } from "./redux/auth/operations";
+import UserHomepage from "./pages/UserHomepage/UserHomepage"
+
 
 function App() {
 
@@ -42,6 +44,7 @@ const { isRefreshing } = useAuth()
             <Route path="/schedulePage" element={<SchedulePage />} />
             <Route path="/login" element={<LogIn />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/userHomepage" element={<UserHomepage />} />
           </Route>
         </Routes>
       </NotificationProvider>

@@ -1,7 +1,8 @@
-import fetchWithFallback from './fetchWithFallback';
+import axios from "axios";
+import { BASE_URL } from "./api";
 
 export const login = (credentials, token) => {
-  return fetchWithFallback('post', 'auth/login', credentials, {
+  return axios.post(`${BASE_URL}/auth/login`, credentials, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -9,11 +10,11 @@ export const login = (credentials, token) => {
 };
 
 export const register = (credentials) => {
-  return fetchWithFallback('post', 'auth/signup', credentials);
+  return axios.post(`${BASE_URL}/auth/signup`, credentials);
 };
 
 export const refresh = (token) => {
-  return fetchWithFallback('get', 'auth/current', null, {
+  return axios.get(`${BASE_URL}/auth/current`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -21,7 +22,7 @@ export const refresh = (token) => {
 };
 
 export const logout = (token) => {
-  return fetchWithFallback('get', 'auth/logout', null, {
+  return axios.get(`${BASE_URL}/auth/logout`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

@@ -10,9 +10,24 @@ import TextTrackPage from "./pages/TextTrackPage/TextTrackPage";
 import DelTemplatePage from "./pages/DelTemplatePage/DelTemplatePage";
 import { NotificationProvider } from "./components/Notifications/Notifications";
 import SchedulePage from "./pages/SchedulePage/SchedulePage";
+import LogIn from "./pages/LogInPage/LogInPage";
+import SignUp from "./pages/SignUpPage/SignUpPage";
+import { useAuth } from "./hooks/useAuth";
+import { useDispatch } from "react-redux";
+import { useEffect } from "react";
+import { fetchCurrentUser } from "./redux/auth/operations";
 
 function App() {
-  return (
+
+const { isRefreshing } = useAuth()
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(fetchCurrentUser());
+  }, [dispatch]);
+
+  return isRefreshing ? (<b>Refreshing user....</b>) : (
     <div className="App">
       <NotificationProvider>
         <Routes>
@@ -25,6 +40,8 @@ function App() {
             <Route path="/manualSender" element={<ManualPage />} />
             <Route path="/deltemplate" element={<DelTemplatePage />} />
             <Route path="/schedulePage" element={<SchedulePage />} />
+            <Route path="/login" element={<LogIn />} />
+            <Route path="/signup" element={<SignUp />} />
           </Route>
         </Routes>
       </NotificationProvider>

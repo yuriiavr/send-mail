@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import './SchedulePage.css';
 import fetchWithFallback from '../../components/api/fetchWithFallback';
 import { useNotifications } from '../../components/Notifications/Notifications';

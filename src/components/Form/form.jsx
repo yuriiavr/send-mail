@@ -14,14 +14,14 @@ const Form = () => {
 
   const { showNotification } = useNotifications();
 
-  const [sendOption, setSendOption] = useState('sendNow'); 
+  const [sendOption, setSendOption] = useState('sendNow');
   const [scheduledDateTime, setScheduledDateTime] = useState('');
 
   const [formData, setFormData] = useState({
     campaignName: "",
     nameFrom: "",
     domainName: "",
-    posted: "",
+    posted: "", // Початково пустий рядок, але буде числом
     templateName: "",
     geo: "",
     shopName: "",
@@ -39,6 +39,10 @@ const Form = () => {
     if (storedData) {
       try {
         const parsedData = JSON.parse(storedData);
+        // Перетворення posted на число при завантаженні з localStorage
+        if (parsedData.posted) {
+          parsedData.posted = Number(parsedData.posted) || "";
+        }
         setFormData(parsedData);
         if (parsedData.geo) {
           const selectedCountry = COUNTRIES.find(c => c.code === parsedData.geo);
@@ -80,7 +84,7 @@ const Form = () => {
         }
       } catch (error) {
         console.error("Error fetching templates: ", error);
-        setAllTemplates([]); 
+        setAllTemplates([]);
       }
     };
     fetchTemplates();
@@ -107,9 +111,19 @@ const Form = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    let newValue = value;
+
+    // Специфічна обробка для поля 'posted'
+    if (name === "posted") {
+      // Перетворюємо значення на число. Якщо це не число, буде NaN.
+      // Використовуємо порожній рядок, якщо значення не є валідним числом після обрізки пробілів.
+      const numValue = Number(value.trim());
+      newValue = isNaN(numValue) ? "" : numValue;
+    }
+
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: newValue,
     });
 
     if (name === "templateName") {
@@ -175,20 +189,32 @@ const Form = () => {
         finalScheduledDateTime = scheduledDateTime;
     }
 
+    // Примусове перетворення posted на число перед відправкою
+    const postedValue = Number(formData.posted);
+    if (isNaN(postedValue)) {
+      showNotification("The 'Select amount' field must be a valid number.", 'error');
+      setIsSubmitting(false);
+      return;
+    }
+
+    const dataToSend = {
+      campaignName: formData.campaignName,
+      nameFrom: formData.nameFrom,
+      domainName: formData.domainName,
+      posted: postedValue, // Використовуємо перетворене числове значення
+      templateName: formData.templateName,
+      geo: formData.geo,
+      shopName: formData.shopName,
+      productName: formData.productName,
+      tempSubject: formData.tempSubject,
+      previewText: formData.previewText,
+      scheduledTime: finalScheduledDateTime,
+    };
+
+    console.log("Відправляючі дані на сервер:", dataToSend);
+
     try {
-      const response = await fetchWithFallback('post', "senderMails/send", {
-        campaignName: formData.campaignName,
-        nameFrom: formData.nameFrom,
-        domainName: formData.domainName,
-        posted: formData.posted,
-        templateName: formData.templateName,
-        geo: formData.geo,
-        shopName: formData.shopName,
-        productName: formData.productName,
-        tempSubject: formData.tempSubject,
-        previewText: formData.previewText,
-        scheduledTime: finalScheduledDateTime, 
-      });
+      const response = await fetchWithFallback('post', "senderMails/send", dataToSend);
 
       showNotification(finalScheduledDateTime ? "Mailing successfully scheduled!" : "Sent successfully!", 'success');
       localStorage.removeItem(MAIN_FORM_DATA_KEY);
@@ -196,7 +222,7 @@ const Form = () => {
         campaignName: "",
         nameFrom: "",
         domainName: "",
-        posted: "",
+        posted: "", // Скидаємо на порожній рядок
         templateName: "",
         geo: "",
         shopName: "",
@@ -236,10 +262,12 @@ const Form = () => {
     };
   }, [handleClickOutside]);
 
-  const isFormValid = 
+  // Валідація posted тепер враховує, що воно має бути числом
+  const isFormValid =
     formData.campaignName &&
     formData.nameFrom &&
-    formData.posted &&
+    formData.posted !== "" && // Перевіряємо, що не порожній рядок
+    !isNaN(Number(formData.posted)) && // Перевіряємо, що це число
     formData.templateName &&
     formData.geo &&
     formData.shopName &&
@@ -365,7 +393,7 @@ const Form = () => {
               <span>Select amount</span>
               <input
                 name="posted"
-                type="text"
+                type="number" // Змінено на type="number"
                 value={formData.posted}
                 onChange={handleChange}
                 required

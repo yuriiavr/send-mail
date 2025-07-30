@@ -38,10 +38,14 @@
     width: 30px;
 }
 
+.addBtn{
+    position: relative;
+}
+
 .addCont{
     position: absolute;
-    top: 100%;
-    right: -15px;
+    top: 50px;
+    right: 0;
     flex-direction: column;
     background-color: #fff;
     z-index: 600;

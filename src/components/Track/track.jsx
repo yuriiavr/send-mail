@@ -165,8 +165,8 @@ const Track = () => {
               </tr>
             </thead>
             <tbody>
-              {currentItems.map((item) => (
-                <tr key={item.id}>
+              {currentItems.map((item, index) => (
+                <tr key={index}>
                   <td>{item.id}</td>
                   <td>{item.campaignName}</td>
                   <td>{item.posted}</td>

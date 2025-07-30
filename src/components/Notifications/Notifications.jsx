@@ -1,4 +1,4 @@
-import React, { useState, useCallback, createContext, useContext } from 'react';
+import { useState, useCallback, createContext, useContext } from 'react';
 import ReactDOM from 'react-dom';
 import css from './Notifications.module.css';
 

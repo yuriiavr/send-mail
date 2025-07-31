@@ -16,18 +16,22 @@ import { useAuth } from "./hooks/useAuth";
 import { useDispatch } from "react-redux";
 import { useEffect } from "react";
 import { fetchCurrentUser } from "./redux/auth/operations";
-import UserHomepage from "./pages/UserHomepage/UserHomepage"
+import UserHomepage from "./pages/UserHomepage/UserHomepage";
+import axios from "axios";
+import { BASE_URL } from "./components/api/api"; 
 
+axios.defaults.baseURL = BASE_URL;
 
 function App() {
-
-const { isRefreshing } = useAuth()
-
+  const { isRefreshing, token } = useAuth();
   const dispatch = useDispatch();
 
   useEffect(() => {
+    if (token) {
+      axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+    }
     dispatch(fetchCurrentUser());
-  }, [dispatch]);
+  }, [dispatch, token]);
 
   return isRefreshing ? (<b>Refreshing user....</b>) : (
     <div className="App">

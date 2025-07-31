@@ -5,10 +5,11 @@ import { useCallback } from "react";
 
 export const useAuth = () => {
   const dispatch = useDispatch();
-  const { isLoggedIn, isRefreshing, user } = useSelector(selectUserState);
+  const { isLoggedIn, isRefreshing, user, token } = useSelector(selectUserState);
+
   const logout = useCallback(() => {
-    dispatch(logoutUser);
+    dispatch(logoutUser());
   }, [dispatch]);
 
-  return { isLoggedIn, isRefreshing, user, logout };
+  return { isLoggedIn, isRefreshing, user, token, logout };
 };

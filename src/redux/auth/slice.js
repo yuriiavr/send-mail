@@ -1,87 +1,83 @@
-import { createSlice } from "@reduxjs/toolkit";
-import {
-  loginUser,
-  registerUser,
-  logoutUser,
-  fetchCurrentUser,
-} from "./operations";
+import { createSlice, createAction } from "@reduxjs/toolkit";
+
+export const updateRefreshToken = createAction('auth/updateRefreshToken');
 
 const initialState = {
-  user: { userName: null, email: null },
+  user: { userName: null, email: null, userId: null },
   token: null,
+  refreshToken: null,
   isLoggedIn: false,
-  isRefreshig: false,
+  isRefreshing: false,
   error: null,
 };
 
 const authSlice = createSlice({
   name: "auth",
   initialState,
+  reducers: {},
   extraReducers: (builder) => {
-    builder.addCase(loginUser.fulfilled, (state, { payload }) => {
-      const { token } = payload;
-
-      state.user = payload;
-      state.token = token;
-      state.isLoggedIn = true;
-      state.error = null;
-      state.isRefreshig = false;
-    });
-
-    builder.addCase(registerUser.fulfilled, (state, { payload }) => {
-      const { token } = payload;
-
-      state.user = payload;
-      state.token = token;
-      state.isLoggedIn = true;
-      state.error = null;
-      state.isRefreshig = false;
-    });
-
-    builder.addCase(loginUser.pending, (state) => {
-      state.isRefreshig = true;
-    });
-
-    builder.addCase(registerUser.pending, (state) => {
-      state.isRefreshig = true;
-    });
-
-    builder.addCase(loginUser.rejected, (state, payload) => {
-      state.error = payload.error;
-      state.isRefreshig = false;
-    });
-
-    builder.addCase(registerUser.rejected, (state, payload) => {
-      state.error = payload.error;
-      state.isRefreshig = false;
-    });
-
-    builder.addCase(logoutUser.pending, (state) => {
-      state.isRefreshig = true;
-    });
-
-    builder.addCase(logoutUser.fulfilled, (state) => {
-      state.user = { name: null, email: null };
-      state.token = null;
-      state.isLoggedIn = false;
-      window.location.reload();
-    });
-
-    builder.addCase(fetchCurrentUser.fulfilled, (state) => {
-      state.isLoggedIn = true;
-      state.isRefreshig = false;
-    });
-
-    builder.addCase(fetchCurrentUser.pending, (state) => {
-      state.isRefreshig = true;
-    });
-
-    builder.addCase(fetchCurrentUser.rejected, (state) => {
-      state.isRefreshig = false;
-    });
+    builder
+      .addCase('auth/register/pending', (state) => {
+        state.isRefreshing = true;
+      })
+      .addCase('auth/register/fulfilled', (state, { payload }) => {
+        const { accessToken, user, refreshToken } = payload;
+        state.user = user;
+        state.token = accessToken;
+        state.refreshToken = refreshToken;
+        state.isLoggedIn = true;
+        state.error = null;
+        state.isRefreshing = false;
+      })
+      .addCase('auth/register/rejected', (state, { payload }) => {
+        state.error = payload;
+        state.isRefreshing = false;
+      })
+      .addCase('auth/login/pending', (state) => {
+        state.isRefreshing = true;
+      })
+      .addCase('auth/login/fulfilled', (state, { payload }) => {
+        const { accessToken, email, userName, userId, refreshToken } = payload;
+        state.user = { email, userName, userId };
+        state.token = accessToken;
+        state.refreshToken = refreshToken;
+        state.isLoggedIn = true;
+        state.error = null;
+        state.isRefreshing = false;
+      })
+      .addCase('auth/login/rejected', (state, { payload }) => {
+        state.error = payload;
+        state.isRefreshing = false;
+      })
+      .addCase('auth/logout/fulfilled', (state) => {
+        state.user = { userName: null, email: null, userId: null };
+        state.token = null;
+        state.refreshToken = null;
+        state.isLoggedIn = false;
+        state.isRefreshing = false;
+      })
+      .addCase('auth/fetchCurrentUser/pending', (state) => {
+        state.isRefreshing = true;
+      })
+      .addCase('auth/fetchCurrentUser/fulfilled', (state, { payload }) => {
+        state.user = payload.user;
+        state.isLoggedIn = true;
+        state.isRefreshing = false;
+        state.error = null;
+      })
+      .addCase('auth/fetchCurrentUser/rejected', (state, { payload }) => {
+        state.error = payload;
+        state.isLoggedIn = false;
+        state.isRefreshing = false;
+        state.token = null;
+        state.refreshToken = null;
+        state.user = { userName: null, email: null, userId: null };
+      })
+      .addCase(updateRefreshToken, (state, { payload }) => {
+        state.refreshToken = payload;
+      });
   },
 });
 
-export default authSlice.reducer;
-
+export const { reducer: userReducer } = authSlice;
 export const selectUserState = (state) => state.user;

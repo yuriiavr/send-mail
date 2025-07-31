@@ -22,7 +22,7 @@ export const refresh = (token) => {
 };
 
 export const logout = (token) => {
-  return axios.get(`${BASE_URL}/auth/logout`, {
+  return axios.post(`${BASE_URL}/auth/logout`, {}, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

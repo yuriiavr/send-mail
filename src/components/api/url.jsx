@@ -1,7 +1,8 @@
 import axios from "axios";
-import { logoutUser, updateRefreshToken } from "../../redux/auth/operations";
+import { logoutUser } from "../../redux/auth/operations";
+import { API_ENDPOINTS } from "./api";
 
-const BASE_URL = 'http://localhost:3001/api/malling';
+const BASE_URL = API_ENDPOINTS.backup;
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -17,15 +18,16 @@ export const setAuthToken = (token) => {
 
 let isInterceptorsSetup = false;
 
-export const setupInterceptors = (store) => { 
+export const setupInterceptors = (store) => {
   if (isInterceptorsSetup) {
     return;
   }
-  
+
   apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
       const originalRequest = error.config;
+
       if (error.response.status === 401 && !originalRequest._isRetry && originalRequest.url !== '/auth/refreshToken') {
         originalRequest._isRetry = true;
         try {
@@ -37,12 +39,16 @@ export const setupInterceptors = (store) => {
             return Promise.reject(error);
           }
 
-          const { data } = await apiClient.post("/auth/refreshToken", { refreshToken: currentRefreshToken });
+          const { data } = await apiClient.post("/auth/refreshToken");
           setAuthToken(data.accessToken);
 
-          if (data.refreshToken) {
-            store.dispatch(updateRefreshToken(data.refreshToken));
-          }
+          store.dispatch({
+            type: "auth/updateToken",
+            payload: {
+              accessToken: data.accessToken,
+              refreshToken: data.refreshToken,
+            },
+          });
 
           originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
           return apiClient(originalRequest);
@@ -54,5 +60,6 @@ export const setupInterceptors = (store) => {
       return Promise.reject(error);
     }
   );
+
   isInterceptorsSetup = true;
 };

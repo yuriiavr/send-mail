@@ -35,9 +35,7 @@ export const logoutUser = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const state = store.getState();
-      console.log(state)
       const currentToken = state.user.token;
-      console.log(currentToken)
       
       await apiClient.post("/auth/logout", {}, {
         headers: {

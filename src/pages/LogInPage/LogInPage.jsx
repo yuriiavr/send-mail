@@ -26,7 +26,7 @@ export default function LogIn() {
         try {
             await dispatch(loginUser(credentials)).unwrap();
             showNotification("Login successful!", 'success');
-            navigate("/", { replace: true });
+            navigate("/userhomepage", { replace: true });
             dispatch(fetchCurrentUser());
 
         } catch (error) {

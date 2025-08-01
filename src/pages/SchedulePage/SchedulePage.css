@@ -20,15 +20,16 @@
 }
 
 .scheduled-send-card.pending {
-  border-left: 5px solid #ffc107; /* Amber for pending */
+  border-left: 5px solid #ffc107;
 }
 
 .scheduled-send-card.sent {
-  border-left: 5px solid #28a745; /* Green for sent */
+  border-left: 5px solid #28a745;
 }
 
-.scheduled-send-card.cancelled {
-  border-left: 5px solid #dc3545; /* Red for cancelled */
+.scheduled-send-card.cancelled,
+.scheduled-send-card.failed {
+  border-left: 5px solid #d9534f;
   opacity: 0.7;
 }
 
@@ -58,8 +59,9 @@
   background-color: #28a745;
 }
 
-.status-badge.cancelled {
-  background-color: #dc3545;
+.status-badge.cancelled,
+.status-badge.failed {
+  background-color: #d9534f;
 }
 
 .card-actions {
@@ -93,18 +95,18 @@
 }
 
 .back-link {
-    margin-top: 30px;
-    text-align: center;
+  margin-top: 30px;
+  text-align: center;
 }
 
 .back-link a {
-    color: #007bff;
-    text-decoration: none;
-    font-weight: bold;
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
 }
 
 .back-link a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .error-message {

@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import fetchWithFallback from '../api/fetchWithFallback';
 import styles from './SmtpItem.module.css';
+import { useNotifications } from '../Notifications/Notifications';
+import { apiClient } from '../api/url'; // Імпортуємо apiClient
 
 const SmtpItem = ({ smtp, onUpdate }) => {
   const [dailyLimit, setDailyLimit] = useState(smtp.dailyLimit);
   const [status, setStatus] = useState(smtp.status);
   const [isEditing, setIsEditing] = useState(false);
-  const [updateMessage, setUpdateMessage] = useState('');
-  const [updateError, setUpdateError] = useState('');
+
+  const { showNotification } = useNotifications();
 
   const handleLimitChange = (e) => {
     setDailyLimit(Number(e.target.value));
@@ -18,11 +19,8 @@ const SmtpItem = ({ smtp, onUpdate }) => {
   };
 
   const handleUpdate = async () => {
-    setUpdateMessage('');
-    setUpdateError('');
     try {
-      const response = await fetchWithFallback(
-        'PUT',
+      const response = await apiClient.put(
         `smtp/smtp-statuses/${smtp.smtp_id}`,
         {
           dailyLimit: dailyLimit,
@@ -31,18 +29,40 @@ const SmtpItem = ({ smtp, onUpdate }) => {
       );
       
       onUpdate(); 
-      setUpdateMessage('Updated successfully!');
+      showNotification('Updated successfully!', 'success');
       setIsEditing(false);
     } catch (err) {
       console.error("Failed to update SMTP:", err);
-      setUpdateError(`Failed to update: ${err.response?.data?.message || err.message}`);
+      const errorMessage = `Failed to update: ${err.response?.data?.message || err.message}`;
+      showNotification(errorMessage, 'error');
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    setDailyLimit(smtp.dailyLimit);
+    setStatus(smtp.status);
+  };
+  
+  const getStatusClass = (currentStatus) => {
+    switch (currentStatus) {
+      case 'stopped':
+        return styles.statusStopped;
+      case 'ban':
+        return styles.statusBan;
+      case 'free':
+        return styles.statusFree;
+      case 'busy':
+        return styles.statusBusy;
+      default:
+        return '';
     }
   };
 
   return (
     <div className={styles.smtpItemContainer}>
-      <h3 className={styles.smtpId}>SMTP ID: {smtp.smtp_id}</h3>
-      <p>Current Status: <strong className={styles.statusText}>{smtp.status}</strong></p>
+      <h3 className={styles.smtpId}>{smtp.smtp_id}</h3>
+      <p>Current Status: <strong className={`${styles.statusText} ${getStatusClass(smtp.status)}`}>{smtp.status}</strong></p>
       <p>Daily Limit: {smtp.dailyLimit}</p>
       <p>Today's Sends: {smtp.todaySends}</p>
 
@@ -74,6 +94,7 @@ const SmtpItem = ({ smtp, onUpdate }) => {
                   checked={status === s}
                   onChange={handleStatusChange}
                 />
+                <span className={styles.radioCustom}></span>
                 {s.charAt(0).toUpperCase() + s.slice(1)}
               </label>
             ))}
@@ -82,17 +103,9 @@ const SmtpItem = ({ smtp, onUpdate }) => {
           <button onClick={handleUpdate} className={styles.saveButton}>
             Save Changes
           </button>
-          <button onClick={() => {
-            setIsEditing(false);
-            setDailyLimit(smtp.dailyLimit);
-            setStatus(smtp.status);
-            setUpdateMessage('');
-            setUpdateError('');
-          }} className={styles.cancelButton}>
+          <button onClick={handleCancel} className={styles.cancelButton}>
             Cancel
           </button>
-          {updateMessage && <p className={`${styles.message} ${styles.success}`}>{updateMessage}</p>}
-          {updateError && <p className={`${styles.message} ${styles.error}`}>{updateError}</p>}
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import css from './addTemplate.module.css';
-import fetchWithFallback from "../api/fetchWithFallback";
+import { apiClient } from "../api/url";
 import COUNTRIES from "../Constants/Countries";
 import { useNotifications } from '../Notifications/Notifications';
 
@@ -109,17 +109,17 @@ const AddTemplate = () => {
             if (bodyElement) {
                 processedTempBody = bodyElement.innerHTML;
             } else {
-                showNotification('Попередження: Тег <body> не знайдено у вмісті шаблону. Буде відправлено весь введений вміст.', 'info');
+                showNotification('Warning: <body> tag not found in template content. The entire entered content will be sent.', 'info');
             }
 
-            const response = await fetchWithFallback('post', 'templates/addtemp', {
+            const response = await apiClient.post('templates/addtemp', {
                 tempName,
                 tempSubject,
                 tempBody: processedTempBody,
                 tempGeo
             });
 
-            showNotification('Шаблон збережено!', 'success');
+            showNotification('Template saved!', 'success');
             localStorage.removeItem(ADD_TEMPLATE_DATA_KEY);
             setTempName('');
             setTempSubject('');
@@ -127,7 +127,7 @@ const AddTemplate = () => {
             setTempGeo('');
             setGeoInput('');
         } catch (error) {
-            showNotification('Помилка при створенні шаблону. Будь ласка, спробуйте ще раз.', 'error');
+            showNotification('Error creating template. Please try again.', 'error');
         }
     };
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import css from './DelTemplate.module.css';
-import fetchWithFallback from "../api/fetchWithFallback";
 import { useNotifications } from '../Notifications/Notifications';
+import { apiClient } from "../api/url";
 
 const DeleteTemplate = () => {
     const [allTemplates, setAllTemplates] = useState([]);
@@ -15,7 +15,7 @@ const DeleteTemplate = () => {
 
     const fetchAllTemplates = useCallback(async () => {
         try {
-            const response = await fetchWithFallback('get', 'templates/gettemp');
+            const response = await apiClient.get('templates/gettemp');
             if (response.data && Array.isArray(response.data.templates)) {
                 setAllTemplates(response.data.templates);
                 setFilteredTemplates(response.data.templates);
@@ -100,7 +100,7 @@ const DeleteTemplate = () => {
                 return;
             }
 
-            const response = await fetchWithFallback('delete', `templates/${selectedTemplateId}`);
+            const response = await apiClient.delete(`templates/${selectedTemplateId}`);
 
             if (response.success) {
                 showNotification(`Template deleted: ID ${response.deletedTemplateId}`, 'success');

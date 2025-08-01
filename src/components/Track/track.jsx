@@ -1,6 +1,7 @@
 import css from "./track.module.css";
-import React, { useEffect, useState } from "react";
-import fetchWithFallback from "../api/fetchWithFallback";
+import React, { useEffect, useState, useCallback } from "react";
+import Loader from "../../components/Loader/Loader";
+import { apiClient } from "../../components/api/url"; 
 
 const Track = () => {
   const [data, setData] = useState([]);
@@ -12,12 +13,10 @@ const Track = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetchWithFallback(
-        'get', "senderMails/stats"
-      );
+      const response = await apiClient.get("senderMails/stats");
 
       const sortedData = [...response.data].sort((a, b) => {
         const [dayA, monthA, yearA] = a.createdAt.split(" ")[0].split(".");
@@ -29,7 +28,7 @@ const Track = () => {
         const dateA = new Date(`20${yearA}-${monthA}-${dayA}T${timeA}`);
         const dateB = new Date(`20${yearB}-${monthB}-${dayB}T${timeB}`);
 
-        return dateB - dateA; // новіші зверху
+        return dateB - dateA;
       });
 
       setData(sortedData);
@@ -40,11 +39,11 @@ const Track = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   useEffect(() => {
     let result = [...data];
@@ -73,7 +72,6 @@ const Track = () => {
     setCurrentPage(1);
   }, [geoFilter, startDate, endDate, data]);
 
-  // Пагінація
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = filteredData.slice(indexOfFirstItem, indexOfLastItem);
@@ -82,7 +80,7 @@ const Track = () => {
 
   return (
     <div className={css.tableContainer}>
-     
+      
       <div className={css.controlsCont}>
         <div className={css.controls}>
           <label>
@@ -148,7 +146,7 @@ const Track = () => {
       </div>
 
       {loading ? (
-        <div className={css.loader}>Loading...</div>
+        <Loader />
       ) : (
         <>
           <table className={css.dataTable}>

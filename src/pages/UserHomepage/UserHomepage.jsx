@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Container from "../../components/Container/Container";
-import fetchWithFallback from "../../components/api/fetchWithFallback";
 import SmtpItem from "../../components/SmtpItem/SmtpItem";
+import Loader from "../../components/Loader/Loader";
 import styles from './UserHomepage.module.css';
+import { apiClient } from '../../components/api/url';
 
 const UserHomepage = () => {
   const [smtpStatuses, setSmtpStatuses] = useState([]);
@@ -13,7 +14,7 @@ const UserHomepage = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetchWithFallback("GET", "smtp/smtp-statuses");
+      const response = await apiClient.get("smtp/smtp-statuses");
       setSmtpStatuses(response.data);
     } catch (err) {
       console.error("Failed to fetch SMTP statuses:", err);
@@ -31,9 +32,17 @@ const UserHomepage = () => {
     fetchStatuses();
   };
 
-  if (loading) return <p className={styles.statusMessage}>Loading SMTP statuses...</p>;
-  if (error) return <p className={`${styles.statusMessage} ${styles.error}`}>{error}</p>;
-  if (smtpStatuses.length === 0) return <p className={styles.statusMessage}>No SMTP statuses found.</p>;
+  if (loading) {
+    return <Loader />;
+  }
+
+  if (error) {
+    return <p className={`${styles.statusMessage} ${styles.error}`}>{error}</p>;
+  }
+
+  if (smtpStatuses.length === 0) {
+    return <p className={styles.statusMessage}>No SMTP statuses found.</p>;
+  }
 
   return (
     <Container>
@@ -47,9 +56,11 @@ const UserHomepage = () => {
               Refresh Statuses
             </button>
         </div>
-        {smtpStatuses.map((smtp) => (
-          <SmtpItem key={smtp._id} smtp={smtp} onUpdate={handleUpdateSmtp} />
-        ))}
+        <div className={styles.SmtpListWrapper}>
+          {smtpStatuses.map((smtp) => (
+            <SmtpItem key={smtp._id} smtp={smtp} onUpdate={handleUpdateSmtp} />
+          ))}
+        </div>
       </div>
     </Container>
   );

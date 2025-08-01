@@ -2,6 +2,7 @@ import { createAsyncThunk, createAction } from "@reduxjs/toolkit";
 import { apiClient, setAuthToken } from "../../components/api/url";
 import { store } from "../store";
 
+export const updateAccessToken = createAction('auth/updateAccessToken');
 export const updateRefreshToken = createAction('auth/updateRefreshToken');
 
 export const registerUser = createAsyncThunk(
@@ -15,7 +16,7 @@ export const registerUser = createAsyncThunk(
       return thunkAPI.rejectWithValue(error.message);
     }
   }
-  );
+);
 
 export const loginUser = createAsyncThunk(
   "auth/login",
@@ -35,7 +36,7 @@ export const logoutUser = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const state = store.getState();
-      const currentToken = state.user.token;
+      const currentToken = state.user.accessToken;
       
       await apiClient.post("/auth/logout", {}, {
         headers: {
@@ -58,7 +59,7 @@ export const fetchCurrentUser = createAsyncThunk(
   async (_, thunkAPI) => {
     try {
       const state = store.getState();
-      const persistedToken = state.user.token;
+      const persistedToken = state.user.accessToken;
 
       if (!persistedToken) {
         return thunkAPI.rejectWithValue("No token found");

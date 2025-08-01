@@ -1,11 +1,10 @@
 import axios from "axios";
-import { logoutUser } from "../../redux/auth/operations";
-import { API_ENDPOINTS } from "./api";
-
-const BASE_URL = API_ENDPOINTS.backup;
+import { logoutUser, updateAccessToken, updateRefreshToken } from "../../redux/auth/operations";
+import { BASE_URL } from "./api";
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
+  withCredentials: true,
 });
 
 export const setAuthToken = (token) => {
@@ -38,17 +37,15 @@ export const setupInterceptors = (store) => {
             store.dispatch(logoutUser());
             return Promise.reject(error);
           }
-
-          const { data } = await apiClient.post("/auth/refreshToken");
+          
+          // Assuming the refresh token is sent in the body of the request
+          const { data } = await apiClient.post("/auth/refreshToken", { refreshToken: currentRefreshToken });
+          
           setAuthToken(data.accessToken);
 
-          store.dispatch({
-            type: "auth/updateToken",
-            payload: {
-              accessToken: data.accessToken,
-              refreshToken: data.refreshToken,
-            },
-          });
+          // Dispatch the correct actions to update the store with both new tokens
+          store.dispatch(updateAccessToken({ accessToken: data.accessToken }));
+          store.dispatch(updateRefreshToken(data.refreshToken));
 
           originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
           return apiClient(originalRequest);

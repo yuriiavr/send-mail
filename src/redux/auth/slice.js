@@ -1,10 +1,11 @@
 import { createSlice, createAction } from "@reduxjs/toolkit";
 
+export const updateAccessToken = createAction('auth/updateAccessToken');
 export const updateRefreshToken = createAction('auth/updateRefreshToken');
 
 const initialState = {
   user: { userName: null, email: null, userId: null },
-  token: null,
+  accessToken: null,
   refreshToken: null,
   isLoggedIn: false,
   isRefreshing: false,
@@ -23,7 +24,7 @@ const authSlice = createSlice({
       .addCase('auth/register/fulfilled', (state, { payload }) => {
         const { accessToken, user, refreshToken } = payload;
         state.user = user;
-        state.token = accessToken;
+        state.accessToken = accessToken;
         state.refreshToken = refreshToken;
         state.isLoggedIn = true;
         state.error = null;
@@ -39,7 +40,7 @@ const authSlice = createSlice({
       .addCase('auth/login/fulfilled', (state, { payload }) => {
         const { accessToken, email, userName, userId, refreshToken } = payload;
         state.user = { email, userName, userId };
-        state.token = accessToken;
+        state.accessToken = accessToken;
         state.refreshToken = refreshToken;
         state.isLoggedIn = true;
         state.error = null;
@@ -51,7 +52,7 @@ const authSlice = createSlice({
       })
       .addCase('auth/logout/fulfilled', (state) => {
         state.user = { userName: null, email: null, userId: null };
-        state.token = null;
+        state.accessToken = null;
         state.refreshToken = null;
         state.isLoggedIn = false;
         state.isRefreshing = false;
@@ -69,9 +70,12 @@ const authSlice = createSlice({
         state.error = payload;
         state.isLoggedIn = false;
         state.isRefreshing = false;
-        state.token = null;
+        state.accessToken = null;
         state.refreshToken = null;
         state.user = { userName: null, email: null, userId: null };
+      })
+      .addCase(updateAccessToken, (state, { payload }) => {
+        state.accessToken = payload.accessToken;
       })
       .addCase(updateRefreshToken, (state, { payload }) => {
         state.refreshToken = payload;

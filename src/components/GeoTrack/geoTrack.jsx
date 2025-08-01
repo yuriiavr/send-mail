@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import css from "../Track/track.module.css";
-import fetchWithFallback from "../api/fetchWithFallback";
+import Loader from "../../components/Loader/Loader";
+import { apiClient } from "../api/url";
 
 const GeoStats = () => {
   const [geoData, setGeoData] = useState([]);
@@ -9,23 +10,21 @@ const GeoStats = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const fetchGeoStats = async () => {
+  const fetchGeoStats = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetchWithFallback(
-       'get', "senderMails/stats"
-      );
+      const response = await apiClient.get("senderMails/stats");
       setAllData(response.data);
     } catch (error) {
       console.error("Помилка отримання статистики по гео:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchGeoStats();
-  }, []);
+  }, [fetchGeoStats]);
 
   useEffect(() => {
     const aggregated = {};
@@ -117,7 +116,7 @@ const GeoStats = () => {
       </div>
 
       {loading ? (
-        <div className={css.loader}>Завантаження...</div>
+        <Loader />
       ) : (
         <table className={css.dataTable}>
           <thead>

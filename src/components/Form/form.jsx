@@ -1,9 +1,9 @@
 import css from "./form.module.css";
 import React, { useEffect, useState, useCallback } from "react";
-import fetchWithFallback from "../api/fetchWithFallback";
 import { Link } from "react-router-dom";
 import COUNTRIES from "../Constants/Countries";
 import { useNotifications } from '../Notifications/Notifications';
+import { apiClient } from "../api/url";
 
 const MAIN_FORM_DATA_KEY = 'mainFormData';
 
@@ -21,7 +21,7 @@ const Form = () => {
     campaignName: "",
     nameFrom: "",
     domainName: "",
-    posted: "", // Початково пустий рядок, але буде числом
+    posted: "",
     templateName: "",
     geo: "",
     shopName: "",
@@ -39,7 +39,6 @@ const Form = () => {
     if (storedData) {
       try {
         const parsedData = JSON.parse(storedData);
-        // Перетворення posted на число при завантаженні з localStorage
         if (parsedData.posted) {
           parsedData.posted = Number(parsedData.posted) || "";
         }
@@ -75,7 +74,7 @@ const Form = () => {
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const response = await fetchWithFallback('get', 'templates/gettemp');
+        const response = await apiClient.get('templates/gettemp');
         if (response.data && Array.isArray(response.data.templates)) {
             setAllTemplates(response.data.templates);
         } else {
@@ -113,10 +112,7 @@ const Form = () => {
     const { name, value } = e.target;
     let newValue = value;
 
-    // Специфічна обробка для поля 'posted'
     if (name === "posted") {
-      // Перетворюємо значення на число. Якщо це не число, буде NaN.
-      // Використовуємо порожній рядок, якщо значення не є валідним числом після обрізки пробілів.
       const numValue = Number(value.trim());
       newValue = isNaN(numValue) ? "" : numValue;
     }
@@ -175,21 +171,20 @@ const Form = () => {
     let finalScheduledDateTime = null;
     if (sendOption === 'schedule') {
         if (!scheduledDateTime) {
-            showNotification("Please select a date and time for delayed sending.", 'error');
-            setIsSubmitting(false);
-            return;
+          showNotification("Please select a date and time for delayed sending.", 'error');
+          setIsSubmitting(false);
+          return;
         }
         const selectedDate = new Date(scheduledDateTime);
         const now = new Date();
         if (selectedDate <= now) {
-            showNotification("The selected date and time must be in the future.", 'error');
-            setIsSubmitting(false);
-            return;
+          showNotification("The selected date and time must be in the future.", 'error');
+          setIsSubmitting(false);
+          return;
         }
         finalScheduledDateTime = scheduledDateTime;
     }
 
-    // Примусове перетворення posted на число перед відправкою
     const postedValue = Number(formData.posted);
     if (isNaN(postedValue)) {
       showNotification("The 'Select amount' field must be a valid number.", 'error');
@@ -201,7 +196,7 @@ const Form = () => {
       campaignName: formData.campaignName,
       nameFrom: formData.nameFrom,
       domainName: formData.domainName,
-      posted: postedValue, // Використовуємо перетворене числове значення
+      posted: postedValue,
       templateName: formData.templateName,
       geo: formData.geo,
       shopName: formData.shopName,
@@ -214,7 +209,7 @@ const Form = () => {
     console.log("Відправляючі дані на сервер:", dataToSend);
 
     try {
-      const response = await fetchWithFallback('post', "senderMails/send", dataToSend);
+      await apiClient.post("senderMails/send", dataToSend);
 
       showNotification(finalScheduledDateTime ? "Mailing successfully scheduled!" : "Sent successfully!", 'success');
       localStorage.removeItem(MAIN_FORM_DATA_KEY);
@@ -222,7 +217,7 @@ const Form = () => {
         campaignName: "",
         nameFrom: "",
         domainName: "",
-        posted: "", // Скидаємо на порожній рядок
+        posted: "",
         templateName: "",
         geo: "",
         shopName: "",
@@ -262,12 +257,11 @@ const Form = () => {
     };
   }, [handleClickOutside]);
 
-  // Валідація posted тепер враховує, що воно має бути числом
   const isFormValid =
     formData.campaignName &&
     formData.nameFrom &&
-    formData.posted !== "" && // Перевіряємо, що не порожній рядок
-    !isNaN(Number(formData.posted)) && // Перевіряємо, що це число
+    formData.posted !== "" &&
+    !isNaN(Number(formData.posted)) &&
     formData.templateName &&
     formData.geo &&
     formData.shopName &&
@@ -393,7 +387,7 @@ const Form = () => {
               <span>Select amount</span>
               <input
                 name="posted"
-                type="number" // Змінено на type="number"
+                type="number"
                 value={formData.posted}
                 onChange={handleChange}
                 required

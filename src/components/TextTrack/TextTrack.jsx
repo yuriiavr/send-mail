@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import css from "../Track/track.module.css";
-import fetchWithFallback from "../api/fetchWithFallback";
+import Loader from "../../components/Loader/Loader";
+import { apiClient } from "../api/url";
+
 const TextTrack = () => {
   const [textData, setTextData] = useState([]);
   const [allData, setAllData] = useState([]);
@@ -8,23 +10,21 @@ const TextTrack = () => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const fetchTextStats = async () => {
+  const fetchTextStats = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetchWithFallback(
-       'get', "senderMails/stats"
-      );
+      const response = await apiClient.get("senderMails/stats");
       setAllData(response.data);
     } catch (error) {
       console.error("Помилка отримання статистики по текстовому наповненню:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchTextStats();
-  }, []);
+  }, [fetchTextStats]);
 
   useEffect(() => {
     const aggregated = {};
@@ -117,7 +117,7 @@ const TextTrack = () => {
       </div>
 
       {loading ? (
-        <div className={css.loader}>Завантаження...</div>
+        <Loader />
       ) : (
         <table className={css.dataTable}>
           <thead>

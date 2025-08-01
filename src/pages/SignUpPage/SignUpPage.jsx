@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import css from './SignUpPage.module.css';
 import { useState } from 'react';
-import fetchWithFallback from '../../components/api/fetchWithFallback';
 import { useNotifications } from '../../components/Notifications/Notifications';
 import Container from '../../components/Container/Container';
+import { useDispatch } from 'react-redux';
+import { registerUser } from '../../redux/auth/operations';
 
 export default function SignUp() {
     const [userName, setUserName] = useState('');
@@ -13,31 +14,28 @@ export default function SignUp() {
     const [showSuccess, setShowSuccess] = useState(false);
 
     const { showNotification } = useNotifications();
+    const dispatch = useDispatch();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
 
         try {
-            const response = await fetchWithFallback('post', 'auth/register', { userName, email, password });
+            const result = await dispatch(registerUser({ userName, email, password }));
 
-            if (response.data && response.data.status === 'success') {
+            if (result.meta.requestStatus === 'fulfilled') {
                 setShowSuccess(true);
                 showNotification("Registration successful! Please check your email for verification.", 'success');
                 setUserName('');
                 setEmail('');
                 setPassword('');
             } else {
-                showNotification(response.data?.message || "Registration failed. Please try again.", 'error');
+                const errorMessage = result.payload || "Registration failed. Please try again.";
+                showNotification(errorMessage, 'error');
             }
         } catch (err) {
-            const errorMessage = err.response?.data?.error || err.message || "An unexpected error occurred.";
-
-            if (err.response?.status === 400 && errorMessage.includes('duplicate key error')) {
-                showNotification("This email is already in use.", 'error');
-            } else {
-                showNotification(`Registration error: ${errorMessage}`, 'error');
-            }
+            const errorMessage = err.message || "An unexpected error occurred.";
+            showNotification(`Registration error: ${errorMessage}`, 'error');
         } finally {
             setIsSubmitting(false);
         }

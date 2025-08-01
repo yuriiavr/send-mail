@@ -1,9 +1,9 @@
 import css from "../form.module.css";
-import fetchWithFallback from "../../api/fetchWithFallback";
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import COUNTRIES from "../../Constants/Countries";
 import { useNotifications } from '../../Notifications/Notifications';
+import { apiClient } from "../../api/url";
 
 const MANUAL_FORM_DATA_KEY = 'manualFormData';
 
@@ -70,7 +70,7 @@ const ManualForm = () => {
  useEffect(() => {
   const fetchTemplates = async () => {
    try {
-    const response = await fetchWithFallback('get', 'templates/gettemp');
+    const response = await apiClient.get('templates/gettemp');
     if (response.data && Array.isArray(response.data.templates)) {
       setTemplates(response.data.templates);
     } else {
@@ -88,9 +88,9 @@ const ManualForm = () => {
  useEffect(() => {
   const rawEmailsString = formData.emails;
   const emailsArray = rawEmailsString
-   .split('\n')
-   .map(email => email.trim())
-   .filter(email => email !== '');
+    .split('\n')
+    .map(email => email.trim())
+    .filter(email => email !== '');
   setEmailCount(emailsArray.length);
  }, [formData.emails]);
 
@@ -170,9 +170,9 @@ const ManualForm = () => {
 
   const rawEmailsString = formData.emails;
   const emailStrings = rawEmailsString
-   .split('\n')
-   .map(email => email.trim())
-   .filter(email => email !== '');
+    .split('\n')
+    .map(email => email.trim())
+    .filter(email => email !== '');
 
     const emailsForBackend = emailStrings.map(email => ({ email: email }));
 
@@ -200,7 +200,7 @@ const ManualForm = () => {
   }
 
   try {
-   const response = await fetchWithFallback('post', "senderMails/send-manual", {
+   await apiClient.post("senderMails/send-manual", {
     campaignName: formData.campaignName,
     nameFrom: formData.nameFrom,
     domainName: formData.domainName,
@@ -353,36 +353,36 @@ const ManualForm = () => {
       <h3>Send Options:</h3>
       <div>
        <label className={css.radioLabel}>
-         <input
-           type="radio"
-           value="sendNow"
-           checked={sendOption === 'sendNow'}
-           onChange={() => setSendOption('sendNow')}
-         />
-         Send Now
+        <input
+         type="radio"
+         value="sendNow"
+         checked={sendOption === 'sendNow'}
+         onChange={() => setSendOption('sendNow')}
+        />
+        Send Now
        </label>
       </div>
       <div>
        <label className={css.radioLabel}>
-         <input
-           type="radio"
-           value="schedule"
-           checked={sendOption === 'schedule'}
-           onChange={() => setSendOption('schedule')}
-         />
-         Schedule Send
+        <input
+         type="radio"
+         value="schedule"
+         checked={sendOption === 'schedule'}
+         onChange={() => setSendOption('schedule')}
+        />
+        Schedule Send
        </label>
       </div>
       {sendOption === 'schedule' && (
-        <label className={css.scheduleDateTimeLabel}>
-          <span>Scheduled Date and Time:</span>
-          <input
-            type="datetime-local"
-            value={scheduledDateTime}
-            onChange={(e) => setScheduledDateTime(e.target.value)}
-            required
-          />
-        </label>
+       <label className={css.scheduleDateTimeLabel}>
+         <span>Scheduled Date and Time:</span>
+         <input
+          type="datetime-local"
+          value={scheduledDateTime}
+          onChange={(e) => setScheduledDateTime(e.target.value)}
+          required
+         />
+       </label>
       )}
     </div>
 

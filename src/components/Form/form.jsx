@@ -2,25 +2,26 @@ import css from "./form.module.css";
 import React, { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import COUNTRIES from "../Constants/Countries";
-import { useNotifications } from '../Notifications/Notifications';
+import { useNotifications } from "../Notifications/Notifications";
 import { apiClient } from "../api/url";
 
-const MAIN_FORM_DATA_KEY = 'mainFormData';
+const MAIN_FORM_DATA_KEY = "mainFormData";
 
 const Form = () => {
   const [allTemplates, setAllTemplates] = useState([]);
   const [filteredTemplates, setFilteredTemplates] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [savedTemplates, setSavedTemplates] = useState([]);
+  const [selectedSavedTemplate, setSelectedSavedTemplate] = useState("");
 
-  const { showNotification } = useNotifications();
+  const { showNotification, showNameInput } = useNotifications();
 
-  const [sendOption, setSendOption] = useState('sendNow');
-  const [scheduledDateTime, setScheduledDateTime] = useState('');
+  const [sendOption, setSendOption] = useState("sendNow");
+  const [scheduledDateTime, setScheduledDateTime] = useState("");
 
   const [formData, setFormData] = useState({
     campaignName: "",
     nameFrom: "",
-    domainName: "",
     posted: "",
     templateName: "",
     geo: "",
@@ -44,13 +45,15 @@ const Form = () => {
         }
         setFormData(parsedData);
         if (parsedData.geo) {
-          const selectedCountry = COUNTRIES.find(c => c.code === parsedData.geo);
+          const selectedCountry = COUNTRIES.find(
+            (c) => c.code === parsedData.geo
+          );
           if (selectedCountry) {
             setGeoInput(selectedCountry.name);
           }
         }
-        setSendOption(parsedData.sendOption || 'sendNow');
-        setScheduledDateTime(parsedData.scheduledDateTime || '');
+        setSendOption(parsedData.sendOption || "sendNow");
+        setScheduledDateTime(parsedData.scheduledDateTime || "");
       } catch (e) {
         console.error("Failed to parse stored form data from localStorage", e);
         localStorage.removeItem(MAIN_FORM_DATA_KEY);
@@ -60,11 +63,14 @@ const Form = () => {
 
   useEffect(() => {
     const handler = setTimeout(() => {
-      localStorage.setItem(MAIN_FORM_DATA_KEY, JSON.stringify({
-        ...formData,
-        sendOption,
-        scheduledDateTime
-      }));
+      localStorage.setItem(
+        MAIN_FORM_DATA_KEY,
+        JSON.stringify({
+          ...formData,
+          sendOption,
+          scheduledDateTime,
+        })
+      );
     }, 500);
     return () => {
       clearTimeout(handler);
@@ -74,12 +80,15 @@ const Form = () => {
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        const response = await apiClient.get('templates/gettemp');
+        const response = await apiClient.get("templates/gettemp");
         if (response.data && Array.isArray(response.data.templates)) {
-            setAllTemplates(response.data.templates);
+          setAllTemplates(response.data.templates);
         } else {
-            console.error("Error: Invalid template data format or templates is not an array.", response);
-            setAllTemplates([]);
+          console.error(
+            "Error: Invalid template data format or templates is not an array.",
+            response
+          );
+          setAllTemplates([]);
         }
       } catch (error) {
         console.error("Error fetching templates: ", error);
@@ -90,8 +99,36 @@ const Form = () => {
   }, []);
 
   useEffect(() => {
+    const fetchSavedTemplates = async () => {
+      try {
+        const response = await apiClient.get(
+          "/senderMails/getSavedsaveTemplates"
+        );
+        if (response.data && Array.isArray(response.data.templates)) {
+          setSavedTemplates(response.data.templates);
+        } else {
+          console.error(
+            "Error: Invalid saved templates data format or templates is not an array.",
+            response
+          );
+          setSavedTemplates([]);
+        }
+      } catch (error) {
+        console.error("Error fetching saved templates: ", error);
+        setSavedTemplates([]);
+      }
+    };
+    fetchSavedTemplates();
+  }, []);
+
+  useEffect(() => {
     if (!formData.geo) {
-      setFilteredTemplates(allTemplates.filter(template => template.tempGeo === "none" || template.tempGeo === undefined));
+      setFilteredTemplates(
+        allTemplates.filter(
+          (template) =>
+            template.tempGeo === "none" || template.tempGeo === undefined
+        )
+      );
     } else {
       const templatesByGeo = allTemplates.filter(
         (template) =>
@@ -99,13 +136,6 @@ const Form = () => {
       );
       setFilteredTemplates(templatesByGeo);
     }
-
-    setFormData((prev) => ({
-      ...prev,
-      templateName: "",
-      tempSubject: "",
-      previewText: "",
-    }));
   }, [formData.geo, allTemplates]);
 
   const handleChange = (e) => {
@@ -136,6 +166,36 @@ const Form = () => {
     }
   };
 
+  const handleSavedTemplateChange = (e) => {
+    const { value } = e.target;
+    setSelectedSavedTemplate(value);
+    if (value) {
+      const selectedTemplate = savedTemplates.find(
+        (t) => t.senderTemplateName === value
+      );
+      if (selectedTemplate) {
+        setFormData({
+          campaignName: selectedTemplate.campaignName,
+          nameFrom: selectedTemplate.nameFrom,
+          posted: selectedTemplate.posted,
+          templateName: selectedTemplate.templateName,
+          senderTemplateName: selectedTemplate.senderTemplateName,
+          geo: selectedTemplate.geo,
+          shopName: selectedTemplate.shopName,
+          tempSubject: selectedTemplate.tempSubject,
+          productName: selectedTemplate.productName,
+          previewText: selectedTemplate.previewText,
+        });
+        const selectedCountry = COUNTRIES.find(
+          (c) => c.code === selectedTemplate.geo
+        );
+        if (selectedCountry) {
+          setGeoInput(selectedCountry.name);
+        }
+      }
+    }
+  };
+
   const handleGeoInputChange = (e) => {
     const value = e.target.value;
     setGeoInput(value);
@@ -148,46 +208,76 @@ const Form = () => {
     );
     setFilteredCountries(filtered);
 
-    const currentSelectedCountryObject = COUNTRIES.find(c => c.code === formData.geo);
+    const currentSelectedCountryObject = COUNTRIES.find(
+      (c) => c.code === formData.geo
+    );
 
     if (value === "") {
       setFormData((prev) => ({ ...prev, geo: "" }));
-    } else if (currentSelectedCountryObject && currentSelectedCountryObject.name.toLowerCase() !== lowerCaseValue) {
+    } else if (
+      currentSelectedCountryObject &&
+      currentSelectedCountryObject.name.toLowerCase() !== lowerCaseValue
+    ) {
       setFormData((prev) => ({ ...prev, geo: "" }));
+    }
+
+    if (value === "" || !COUNTRIES.some(c => c.name.toLowerCase() === lowerCaseValue)) {
+        setFormData(prev => ({
+            ...prev,
+            geo: "",
+            templateName: "",
+            tempSubject: "",
+            previewText: "",
+        }));
     }
   };
 
-  const handleGeoSelect = (country) => {
+const handleGeoSelect = (country) => {
     setGeoInput(country.name);
-    setFormData((prev) => ({ ...prev, geo: country.code }));
+    setFormData((prev) => ({ 
+        ...prev, 
+        geo: country.code,
+        templateName: "",
+        tempSubject: "",
+        previewText: "",
+    }));
     setShowDropdown(false);
     setFilteredCountries([]);
-  };
+};
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     let finalScheduledDateTime = null;
-    if (sendOption === 'schedule') {
-        if (!scheduledDateTime) {
-          showNotification("Please select a date and time for delayed sending.", 'error');
-          setIsSubmitting(false);
-          return;
-        }
-        const selectedDate = new Date(scheduledDateTime);
-        const now = new Date();
-        if (selectedDate <= now) {
-          showNotification("The selected date and time must be in the future.", 'error');
-          setIsSubmitting(false);
-          return;
-        }
-        finalScheduledDateTime = scheduledDateTime;
+    if (sendOption === "schedule") {
+      if (!scheduledDateTime) {
+        showNotification(
+          "Please select a date and time for delayed sending.",
+          "error"
+        );
+        setIsSubmitting(false);
+        return;
+      }
+      const selectedDate = new Date(scheduledDateTime);
+      const now = new Date();
+      if (selectedDate <= now) {
+        showNotification(
+          "The selected date and time must be in the future.",
+          "error"
+        );
+        setIsSubmitting(false);
+        return;
+      }
+      finalScheduledDateTime = scheduledDateTime;
     }
 
     const postedValue = Number(formData.posted);
     if (isNaN(postedValue)) {
-      showNotification("The 'Select amount' field must be a valid number.", 'error');
+      showNotification(
+        "The 'Select amount' field must be a valid number.",
+        "error"
+      );
       setIsSubmitting(false);
       return;
     }
@@ -211,7 +301,12 @@ const Form = () => {
     try {
       await apiClient.post("senderMails/send", dataToSend);
 
-      showNotification(finalScheduledDateTime ? "Mailing successfully scheduled!" : "Sent successfully!", 'success');
+      showNotification(
+        finalScheduledDateTime
+          ? "Mailing successfully scheduled!"
+          : "Sent successfully!",
+        "success"
+      );
       localStorage.removeItem(MAIN_FORM_DATA_KEY);
       setFormData({
         campaignName: "",
@@ -226,29 +321,87 @@ const Form = () => {
         previewText: "",
       });
       setGeoInput("");
-      setSendOption('sendNow');
-      setScheduledDateTime('');
+      setSendOption("sendNow");
+      setScheduledDateTime("");
+      setSelectedSavedTemplate("");
     } catch (error) {
-      showNotification(`Error sending: ${error.response?.data?.error || error.message}`, 'error');
+      showNotification(
+        `Error sending: ${error.response?.data?.error || error.message}`,
+        "error"
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleClickOutside = useCallback((e) => {
-    if (e.target && !e.target.closest(`.${css.selectStylesGeo}`) && showDropdown) {
-      setShowDropdown(false);
+  const handleSaveAsTemplate = async () => {
+    if (!isFormValid) {
+      showNotification(
+        "Please fill out all required fields before saving as a template.",
+        "warning"
+      );
+      return;
+    }
 
-      const selectedCountry = COUNTRIES.find(country => country.code === formData.geo);
-      if (selectedCountry) {
-        if (geoInput !== selectedCountry.name) {
-          setGeoInput(selectedCountry.name);
-        }
+    try {
+      const senderTemplateName = await showNameInput(
+        "Please enter a name for the new template:"
+      );
+
+      const dataToSave = {
+        ...formData,
+        senderTemplateName: senderTemplateName,
+      };
+
+      await apiClient.post("/senderMails/saveTemplate", dataToSave);
+      showNotification(
+        `Form saved as new template: "${senderTemplateName}"!`,
+        "success"
+      );
+
+      const response = await apiClient.get("/senderMails/getSavedsaveTemplates");
+      if (response.data && Array.isArray(response.data.templates)) {
+        setSavedTemplates(response.data.templates);
+      }
+    } catch (error) {
+      if (typeof error === "string" && error === "cancel") {
+        showNotification("Template saving was cancelled.", "info");
       } else {
-        setGeoInput("");
+        showNotification(
+          `Error saving template: ${
+            error.response?.data?.error || error.message
+          }`,
+          "error"
+        );
       }
     }
-  }, [showDropdown, geoInput, formData.geo]);
+
+    console.log(savedTemplates)
+  };
+
+  const handleClickOutside = useCallback(
+    (e) => {
+      if (
+        e.target &&
+        !e.target.closest(`.${css.selectStylesGeo}`) &&
+        showDropdown
+      ) {
+        setShowDropdown(false);
+
+        const selectedCountry = COUNTRIES.find(
+          (country) => country.code === formData.geo
+        );
+        if (selectedCountry) {
+          if (geoInput !== selectedCountry.name) {
+            setGeoInput(selectedCountry.name);
+          }
+        } else {
+          setGeoInput("");
+        }
+      }
+    },
+    [showDropdown, geoInput, formData.geo]
+  );
 
   useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
@@ -279,6 +432,26 @@ const Form = () => {
       </div>
       <form className={css.form} onSubmit={handleSubmit}>
         <div className={css.formCont}>
+          <label>
+            <span>Send templates</span>
+            <div className={css.selectStyles}>
+              <select
+                name="sendTemplates"
+                value={selectedSavedTemplate}
+                onChange={handleSavedTemplateChange}
+              >
+                <option value="">Select a saved template</option>
+                {savedTemplates.map((template) => (
+                  <option
+                    key={template._id}
+                    value={template.senderTemplateName}
+                  >
+                    {template.senderTemplateName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </label>
           <label>
             <span>Enter campaign name</span>
             <input
@@ -423,41 +596,51 @@ const Form = () => {
         </div>
 
         <div className={css.schedulingOptions}>
-            <h3>Send Options:</h3>
-            <div>
-                <label className={css.radioLabel}>
-                    <input
-                        type="radio"
-                        value="sendNow"
-                        checked={sendOption === 'sendNow'}
-                        onChange={() => setSendOption('sendNow')}
-                    />
-                    Send Now
-                </label>
-            </div>
-            <div>
-                <label className={css.radioLabel}>
-                    <input
-                        type="radio"
-                        value="schedule"
-                        checked={sendOption === 'schedule'}
-                        onChange={() => setSendOption('schedule')}
-                    />
-                    Schedule Send
-                </label>
-            </div>
-            {sendOption === 'schedule' && (
-                <label className={css.scheduleDateTimeLabel}>
-                    <span>Scheduled Date and Time:</span>
-                    <input
-                        type="datetime-local"
-                        value={scheduledDateTime}
-                        onChange={(e) => setScheduledDateTime(e.target.value)}
-                        required
-                    />
-                </label>
-            )}
+          <h3>Send Options:</h3>
+          <div>
+            <label className={css.radioLabel}>
+              <input
+                type="radio"
+                value="sendNow"
+                checked={sendOption === "sendNow"}
+                onChange={() => setSendOption("sendNow")}
+              />
+              Send Now
+            </label>
+          </div>
+          <div>
+            <label className={css.radioLabel}>
+              <input
+                type="radio"
+                value="schedule"
+                checked={sendOption === "schedule"}
+                onChange={() => setSendOption("schedule")}
+              />
+              Schedule Send
+            </label>
+          </div>
+          {sendOption === "schedule" && (
+            <label className={css.scheduleDateTimeLabel}>
+              <span>Scheduled Date and Time:</span>
+              <input
+                type="datetime-local"
+                value={scheduledDateTime}
+                onChange={(e) => setScheduledDateTime(e.target.value)}
+                required
+              />
+            </label>
+          )}
         </div>
+
+        <button
+          className="button"
+          type="button"
+          onClick={handleSaveAsTemplate}
+          disabled={!isFormValid}
+          style={{ marginBottom: "10px" }}
+        >
+          Save as template
+        </button>
 
         <button
           disabled={!isFormValid || isSubmitting}

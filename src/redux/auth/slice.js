@@ -1,7 +1,14 @@
 import { createSlice, createAction } from "@reduxjs/toolkit";
+import {
+  registerUser,
+  loginUser,
+  logoutUser,
+  fetchCurrentUser,
+  refreshToken,
+} from "./operations";
 
-export const updateAccessToken = createAction('auth/updateAccessToken');
-export const updateRefreshToken = createAction('auth/updateRefreshToken');
+export const updateAccessToken = createAction("auth/updateAccessToken");
+export const updateRefreshToken = createAction("auth/updateRefreshToken");
 
 const initialState = {
   user: { userName: null, email: null, userId: null },
@@ -18,10 +25,10 @@ const authSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase('auth/register/pending', (state) => {
+      .addCase(registerUser.pending, (state) => {
         state.isRefreshing = true;
       })
-      .addCase('auth/register/fulfilled', (state, { payload }) => {
+      .addCase(registerUser.fulfilled, (state, { payload }) => {
         const { accessToken, user, refreshToken } = payload;
         state.user = user;
         state.accessToken = accessToken;
@@ -30,43 +37,44 @@ const authSlice = createSlice({
         state.error = null;
         state.isRefreshing = false;
       })
-      .addCase('auth/register/rejected', (state, { payload }) => {
+      .addCase(registerUser.rejected, (state, { payload }) => {
         state.error = payload;
         state.isRefreshing = false;
       })
-      .addCase('auth/login/pending', (state) => {
+      .addCase(loginUser.pending, (state) => {
         state.isRefreshing = true;
       })
-      .addCase('auth/login/fulfilled', (state, { payload }) => {
-        const { accessToken, email, userName, userId, refreshToken } = payload;
-        state.user = { email, userName, userId };
+      .addCase(loginUser.fulfilled, (state, { payload }) => {
+        const { accessToken, user, refreshToken } = payload;
+        state.user = user;
         state.accessToken = accessToken;
         state.refreshToken = refreshToken;
         state.isLoggedIn = true;
         state.error = null;
         state.isRefreshing = false;
       })
-      .addCase('auth/login/rejected', (state, { payload }) => {
+      .addCase(loginUser.rejected, (state, { payload }) => {
         state.error = payload;
         state.isRefreshing = false;
       })
-      .addCase('auth/logout/fulfilled', (state) => {
+      .addCase(logoutUser.fulfilled, (state) => {
         state.user = { userName: null, email: null, userId: null };
         state.accessToken = null;
         state.refreshToken = null;
         state.isLoggedIn = false;
         state.isRefreshing = false;
       })
-      .addCase('auth/fetchCurrentUser/pending', (state) => {
+      .addCase(fetchCurrentUser.pending, (state) => {
         state.isRefreshing = true;
       })
-      .addCase('auth/fetchCurrentUser/fulfilled', (state, { payload }) => {
+      .addCase(fetchCurrentUser.fulfilled, (state, { payload }) => {
         state.user = payload.user;
         state.isLoggedIn = true;
         state.isRefreshing = false;
         state.error = null;
+        state.refreshToken = payload.user.refreshToken; 
       })
-      .addCase('auth/fetchCurrentUser/rejected', (state, { payload }) => {
+      .addCase(fetchCurrentUser.rejected, (state, { payload }) => {
         state.error = payload;
         state.isLoggedIn = false;
         state.isRefreshing = false;
@@ -74,11 +82,21 @@ const authSlice = createSlice({
         state.refreshToken = null;
         state.user = { userName: null, email: null, userId: null };
       })
-      .addCase(updateAccessToken, (state, { payload }) => {
-        state.accessToken = payload.accessToken;
+      .addCase(refreshToken.pending, (state) => {
+        state.isRefreshing = true;
       })
-      .addCase(updateRefreshToken, (state, { payload }) => {
-        state.refreshToken = payload;
+      .addCase(refreshToken.fulfilled, (state, { payload }) => {
+        state.accessToken = payload.accessToken;
+        state.refreshToken = payload.refreshToken;
+        state.isRefreshing = false;
+        state.error = null;
+      })
+      .addCase(refreshToken.rejected, (state, { payload }) => {
+        state.isRefreshing = false;
+        state.accessToken = null;
+        state.refreshToken = null;
+        state.isLoggedIn = false;
+        state.error = payload;
       });
   },
 });

@@ -1,6 +1,8 @@
 import axios from "axios";
-import { logoutUser, updateAccessToken, updateRefreshToken } from "../../redux/auth/operations";
+import { logoutUser } from "../../redux/auth/operations";
 import { BASE_URL } from "./api";
+
+import { refreshToken } from "../../redux/auth/operations"; 
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -30,25 +32,17 @@ export const setupInterceptors = (store) => {
       if (error.response.status === 401 && !originalRequest._isRetry && originalRequest.url !== '/auth/refreshToken') {
         originalRequest._isRetry = true;
         try {
-          const state = store.getState();
-          const currentRefreshToken = state.user.refreshToken;
+        
+          const resultAction = await store.dispatch(refreshToken());
 
-          if (!currentRefreshToken) {
-            store.dispatch(logoutUser());
+          if (refreshToken.fulfilled.match(resultAction)) {
+            const newAccessToken = resultAction.payload.accessToken;
+            setAuthToken(newAccessToken);
+            originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            return apiClient(originalRequest);
+          } else {
             return Promise.reject(error);
           }
-          
-          // Assuming the refresh token is sent in the body of the request
-          const { data } = await apiClient.post("/auth/refreshToken", { refreshToken: currentRefreshToken });
-          
-          setAuthToken(data.accessToken);
-
-          // Dispatch the correct actions to update the store with both new tokens
-          store.dispatch(updateAccessToken({ accessToken: data.accessToken }));
-          store.dispatch(updateRefreshToken(data.refreshToken));
-
-          originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
-          return apiClient(originalRequest);
         } catch (refreshError) {
           store.dispatch(logoutUser());
           return Promise.reject(refreshError);
